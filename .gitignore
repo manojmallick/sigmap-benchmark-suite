@@ -1,0 +1,28 @@
+# Session/debug files
+DEBUG_CHECKLIST.md
+COMMANDS_TO_EXECUTE.md
+CURRENT_STATUS.md
+EXECUTION_SUMMARY.md
+FINAL_*.md
+FIX_*.md
+INDEX.md
+LANGUAGE_DETECTION_REPORT.md
+PHASE*.md
+ROOT_CAUSE_AND_FIX.md
+SESSION_SUMMARY.md
+VALIDATION_TEST.md
+ZENODO_*.md
+*_TEMPLATE.md
+
+# Large directories
+repos/
+results/
+analysis/
+archives/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+__pycache__/
+*.pyc
