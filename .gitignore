@@ -43,3 +43,14 @@ __pycache__/
 *.o
 *.so
 *.a
+01_setup_vm.sh
+04_aggregate_results.js
+docs/DELIVERY_SUMMARY.txt
+docs/DEPLOY_TO_GCS.md
+docs/EXTENDED_500_REPOS.md
+docs/INDEX_AND_DEPLOYMENT.md
+docs/PUBLICATION_METHODOLOGY.md
+docs/PUBLICATION_READY_PACKAGE.md
+docs/README_EXTENDED_BENCHMARK.md
+infrastructure/export_academic_datasets.py
+infrastructure/upload_to_gcs_verified.sh
