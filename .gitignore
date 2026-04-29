@@ -4,22 +4,22 @@ sigmap-key.json
 *.pem
 credentials.json
 
-# Session/debug files
-DEBUG_CHECKLIST.md
-COMMANDS_TO_EXECUTE.md
-CURRENT_STATUS.md
-EXECUTION_SUMMARY.md
-FINAL_*.md
-FIX_*.md
-INDEX.md
-LANGUAGE_DETECTION_REPORT.md
-PHASE*.md
-ROOT_CAUSE_AND_FIX.md
-SESSION_SUMMARY.md
-VALIDATION_TEST.md
-ZENODO_ACTION_PLAN.md
-ZENODO_SUBMISSION_GUIDE.md
-*_TEMPLATE.md
+# Session/debug files (root level only — not in subdirectories)
+/DEBUG_CHECKLIST.md
+/COMMANDS_TO_EXECUTE.md
+/CURRENT_STATUS.md
+/EXECUTION_SUMMARY.md
+/FINAL_*.md
+/FIX_*.md
+/INDEX.md
+/LANGUAGE_DETECTION_REPORT.md
+/PHASE*.md
+/ROOT_CAUSE_AND_FIX.md
+/SESSION_SUMMARY.md
+/VALIDATION_TEST.md
+/ZENODO_ACTION_PLAN.md
+/ZENODO_SUBMISSION_GUIDE.md
+/*_TEMPLATE.md
 
 # Large directories (data is already exported)
 repos/
