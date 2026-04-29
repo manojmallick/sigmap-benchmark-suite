@@ -6,10 +6,10 @@ FILES INCLUDED:
 ===============
 
 DATA EXPORTS (4 formats):
-- sigmap-500-repos-2026-04-29.csv         (CSV tabular format)
-- sigmap-500-repos-2026-04-29.json        (JSON structured format)
-- sigmap-500-repos-2026-04-29.jsonl       (JSONL streaming format)
-- sigmap-500-repos-2026-04-29.sql         (PostgreSQL import)
+- sigmap-240-repos-2026-04-29.csv         (CSV tabular format)
+- sigmap-240-repos-2026-04-29.json        (JSON structured format)
+- sigmap-240-repos-2026-04-29.jsonl       (JSONL streaming format)
+- sigmap-240-repos-2026-04-29.sql         (PostgreSQL import)
 
 PAPERS:
 - Dataset_Paper.md                        (2,380 words - for Zenodo)

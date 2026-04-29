@@ -148,10 +148,10 @@ gh release create v1.0-240-repos \
 ## 📚 What's Included
 
 ### Data Exports
-- `sigmap-500-repos-2026-04-29.csv` — Tabular format for spreadsheets
-- `sigmap-500-repos-2026-04-29.json` — Structured JSON format
-- `sigmap-500-repos-2026-04-29.jsonl` — Streaming JSONL format
-- `sigmap-500-repos-2026-04-29.sql` — PostgreSQL import script
+- `sigmap-240-repos-2026-04-29.csv` — Tabular format for spreadsheets
+- `sigmap-240-repos-2026-04-29.json` — Structured JSON format
+- `sigmap-240-repos-2026-04-29.jsonl` — Streaming JSONL format
+- `sigmap-240-repos-2026-04-29.sql` — PostgreSQL import script
 
 ### Documentation
 - `Dataset_Paper.md` — Complete dataset paper (2,380 words)

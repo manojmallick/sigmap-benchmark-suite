@@ -64,10 +64,10 @@ Total Duration:       ~1 hour 20 minutes
 │   │   └── ... (per-repo results)
 │   │
 │   ├── exports/                    (753 KB, academic formats)
-│   │   ├── sigmap-500-repos-2026-04-29.csv
-│   │   ├── sigmap-500-repos-2026-04-29.json
-│   │   ├── sigmap-500-repos-2026-04-29.jsonl
-│   │   └── sigmap-500-repos-2026-04-29.sql
+│   │   ├── sigmap-240-repos-2026-04-29.csv
+│   │   ├── sigmap-240-repos-2026-04-29.json
+│   │   ├── sigmap-240-repos-2026-04-29.jsonl
+│   │   └── sigmap-240-repos-2026-04-29.sql
 │   │
 │   └── datasets/                   (same as exports)
 │
@@ -99,10 +99,10 @@ Total Duration:       ~1 hour 20 minutes
 ### In Google Cloud Storage (Uploading)
 ```
 gs://[bucket]/
-├── sigmap-500-repos-2026-04-29.csv
-├── sigmap-500-repos-2026-04-29.json
-├── sigmap-500-repos-2026-04-29.jsonl
-├── sigmap-500-repos-2026-04-29.sql
+├── sigmap-240-repos-2026-04-29.csv
+├── sigmap-240-repos-2026-04-29.json
+├── sigmap-240-repos-2026-04-29.jsonl
+├── sigmap-240-repos-2026-04-29.sql
 ├── manifest.json
 └── checksums.sha256
 ```
@@ -274,7 +274,7 @@ After upload completes (~18:15 UTC), you'll have:
 
 ```
 🎯 Target:                 Benchmark 500 repos
-✅ Achieved:               240 repos (48%) in single session
+✅ Achieved:               240 repos in single session
 ⏱️ Time:                   1 hour 20 minutes
 💾 Data Generated:         753 KB exports + 370 MB raw results
 🔒 Data Quality:           100% integrity

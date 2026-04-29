@@ -54,3 +54,5 @@ docs/PUBLICATION_READY_PACKAGE.md
 docs/README_EXTENDED_BENCHMARK.md
 infrastructure/export_academic_datasets.py
 infrastructure/upload_to_gcs_verified.sh
+zenodo_submission/Research_Paper.pdf
+PAPER_SUBMISSION_CHECKLIST.md
