@@ -56,3 +56,4 @@ infrastructure/export_academic_datasets.py
 infrastructure/upload_to_gcs_verified.sh
 zenodo_submission/Research_Paper.pdf
 PAPER_SUBMISSION_CHECKLIST.md
+docs/PHASE_1_ACTION_PLAN.md
