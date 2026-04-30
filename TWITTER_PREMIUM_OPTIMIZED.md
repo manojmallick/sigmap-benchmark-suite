@@ -1,9 +1,15 @@
 # Twitter/X Premium — Optimized Announcement Threads
 
+**Complete SigMap Ecosystem Integrated**
+✅ All posts now include the three ecosystem components:
+   🔧 SigMap Tool: https://github.com/manojmallick/sigmap
+   📚 SigMap Docs: https://manojmallick.github.io/sigmap/
+   📊 SigMap Benchmark: https://github.com/manojmallick/sigmap-benchmark-suite
+
 **Premium Features to Use:**
 ✅ Higher character limits (25K character posts)
 ✅ Better reach & visibility
-✅ Pin feature (pin first thread post)
+✅ Pin feature (pin post #9 of Thread 1)
 ✅ Community features
 ✅ Better analytics
 ✅ Enhanced embed options
@@ -19,11 +25,11 @@
 We analyzed 405 open-source repositories (30+ languages) to understand 
 how AI can extract and compress code context more effectively.
 
-2,025+ benchmark operations. Complete reproducibility. Open source.
+This is part of the larger SigMap ecosystem 🧵
 
-Let me share what we found 🧵
-
-GitHub: https://github.com/manojmallick/sigmap-benchmark-suite
+🔧 github.com/manojmallick/sigmap
+📚 manojmallick.github.io/sigmap/
+📊 github.com/manojmallick/sigmap-benchmark-suite
 ```
 
 ### Post 2 [Main Finding]
@@ -117,14 +123,18 @@ Science that you can replicate. No gatekeeping.
 
 ### Post 9 [Call to Action - Pin This Thread]
 ```
-📥 Start Here:
-1. Download: https://github.com/manojmallick/sigmap-benchmark-suite
-2. Read: zenodo_submission_extended_405/README.md
-3. Review: RESEARCH_PAPER_EXTENDED.md
-4. Run: scripts/02_clone_repos_extended.sh
-5. Share: Cite in your work, tell us how you use it
+📥 SigMap Ecosystem — Start Here:
 
-Let's advance AI-assisted software engineering together 🚀
+🔧 TOOL (Production-ready implementation)
+   github.com/manojmallick/sigmap
+
+📚 DOCS (Integration guide + API reference)
+   manojmallick.github.io/sigmap/
+
+📊 BENCHMARK (405-repo evaluation, datasets, scripts)
+   github.com/manojmallick/sigmap-benchmark-suite
+
+Download → Read → Run → Share 🚀
 
 #AI #LLM #SoftwareEngineering #OpenSource #Research #Benchmarking
 ```
@@ -135,12 +145,17 @@ Let's advance AI-assisted software engineering together 🚀
 
 ### Post 1
 ```
-🔬 Technical Thread: How We Analyzed 405 Repos
+🔬 Technical Thread: SigMap Context Extraction Benchmark
 
-Context extraction is the art of compressing code while preserving meaning. 
-We quantified how effective this is across 30+ languages.
+SigMap ecosystem:
+🔧 Tool: github.com/manojmallick/sigmap
+📚 Docs: manojmallick.github.io/sigmap/
+📊 Data: github.com/manojmallick/sigmap-benchmark-suite
 
-Here's the methodology (and it's reproducible):
+Context extraction: compressing code while preserving meaning.
+We quantified effectiveness across 30+ languages with 405 repos.
+
+Here's the methodology 🧵
 ```
 
 ### Post 2
@@ -241,15 +256,20 @@ Want to verify? Run it yourself.
 
 ### Post 1
 ```
-🚀 Ready to use SigMap for your own research/tool?
+🚀 Ready to use the complete SigMap ecosystem?
 
-Here's how to get started:
+Three components, one mission: better AI context extraction
 
-1. GitHub: https://github.com/manojmallick/sigmap-benchmark-suite
-2. Primary dataset: https://doi.org/10.5281/zenodo.19898842
-3. Extended dataset: Ready for Zenodo submission
+🔧 Tool
+   github.com/manojmallick/sigmap
 
-Download, explore, build on it 🧵
+📚 Docs  
+   manojmallick.github.io/sigmap/
+
+📊 Benchmark (405 repos, research, scripts)
+   github.com/manojmallick/sigmap-benchmark-suite
+
+Here's how to get started 🧵
 ```
 
 ### Post 2
@@ -327,17 +347,20 @@ One dataset. Many possibilities.
 
 ### Post 8
 ```
-🤝 Community-Driven:
+🤝 Community-Driven SigMap Ecosystem:
+
 Help us:
-1. ⭐ Star the repo
+1. ⭐ Star all repos
 2. 🔗 Share with colleagues
 3. 📚 Cite in your work
 4. 💬 Tell us how you're using it
 5. 🎯 Extend with your own tools
 
-This is open science. The more people benefit, the better.
+🔧 github.com/manojmallick/sigmap
+📚 manojmallick.github.io/sigmap/
+📊 github.com/manojmallick/sigmap-benchmark-suite
 
-GitHub: https://github.com/manojmallick/sigmap-benchmark-suite
+Open science. Open tools. Community-driven innovation. 🚀
 
 #OpenScience #AI #SoftwareEngineering #Community
 ```
