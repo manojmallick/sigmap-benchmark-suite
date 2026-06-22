@@ -68,10 +68,15 @@ for (const name of readdirSync(RAW_DIR)) {
   const meta = readJson(join(dir, "meta.json")) || {};
   const cov = report.coverage || {};
 
-  // benchmark JSON shape varies; accept several key spellings
-  const hitAt5 = num(bench.hitAt5 ?? bench["hit@5"] ?? bench.hit5);
-  const mrr = num(bench.mrr ?? bench.MRR);
-  const tasks = num(bench.tasks ?? bench.taskCount);
+  // benchmark JSON nests metrics under `metrics` (older shapes were flat);
+  // accept both, plus several key spellings.
+  const bm = bench.metrics || bench;
+  const tasks = num(bm.tasks ?? bm.taskCount);
+  // Only treat retrieval metrics as real when the repo actually had tasks —
+  // otherwise a repo with no task file would report a misleading 0% hit@5.
+  const hasTasks = (tasks ?? 0) > 0;
+  const hitAt5 = hasTasks ? num(bm.hitAt5 ?? bm["hit@5"] ?? bm.hit5) : null;
+  const mrr = hasTasks ? num(bm.mrr ?? bm.MRR) : null;
 
   rows.push({
     repo: meta.repo || name,

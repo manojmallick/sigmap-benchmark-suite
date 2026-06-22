@@ -37,13 +37,18 @@ REPOS=(
   "https://github.com/Alamofire/Alamofire     alamofire Swift"
 )
 
-# language-specific srcDirs (mirrors 03_run_benchmarks.sh); nested for gson
+# High-coverage config (so retrieval expected_files are included) + language
+# srcDirs. $1=label $2=language.
+TASKS_DIR="$HOME/sigmap/benchmarks/tasks"
 config_for(){
+  local base='"maxDepth":10,"autoMaxTokens":false,"maxTokens":200000,"coverageTarget":0.95'
   case "$1" in
-    gson) echo '{"srcDirs":["gson/src/main/java","gson/src/main","extras"]}' ;;
-    Java) echo '{"srcDirs":["src/main/java","src"]}' ;;
-    Go)   echo '{"srcDirs":["cmd","internal","pkg","api","src","."]}' ;;
-    *)    echo '' ;;
+    gson) echo "{\"srcDirs\":[\"gson/src/main/java\",\"gson/src/main\",\"extras\"],$base}"; return ;;
+  esac
+  case "$2" in
+    Java) echo "{\"srcDirs\":[\"src/main/java\",\"src\"],$base}" ;;
+    Go)   echo "{\"srcDirs\":[\"cmd\",\"internal\",\"pkg\",\"api\",\"src\",\".\"],$base}" ;;
+    *)    echo "{$base}" ;;
   esac
 }
 
@@ -66,8 +71,13 @@ for entry in "${REPOS[@]}"; do
   repo="$REPOS_DIR/$label"; [ -d "$repo" ] || continue
   out="$RAW_DIR/$label"; mkdir -p "$out"
   cd "$repo"
-  cfg=$(config_for "$label"); [ -z "$cfg" ] && cfg=$(config_for "$lang")
-  [ -n "$cfg" ] && echo "$cfg" > gen-context.config.json
+  echo "$(config_for "$label" "$lang")" > gen-context.config.json
+  # Drop the curated retrieval tasks so --benchmark can score hit@5 (repos
+  # without a task file simply report no retrieval metrics).
+  if [ -f "$TASKS_DIR/$label.jsonl" ]; then
+    mkdir -p benchmarks/tasks && cp "$TASKS_DIR/$label.jsonl" benchmarks/tasks/retrieval.jsonl
+  fi
+  node "$SIGMAP" >/dev/null 2>&1   # regenerate context with this config first
   run_json --report --json    > "$out/report.json"
   run_json --health --json    > "$out/health.json"
   run_json --benchmark --json > "$out/benchmark.json"
