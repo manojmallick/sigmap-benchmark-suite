@@ -18,6 +18,11 @@ REPOS_DIR="$HOME/repos"
 RAW_DIR="$HOME/results/raw"
 TIMEOUT_SECS=120          # skip repo if any single command exceeds this
 PARALLEL_JOBS=4           # repos to process in parallel (memory-safe on c2-standard-8)
+# `timeout` is Linux-only; macOS has none (or `gtimeout` via coreutils). Fall
+# back to no hard timeout so the suite runs locally on macOS too.
+if command -v timeout >/dev/null 2>&1; then TIMEOUT="timeout $TIMEOUT_SECS";
+elif command -v gtimeout >/dev/null 2>&1; then TIMEOUT="gtimeout $TIMEOUT_SECS";
+else TIMEOUT=""; fi
 
 mkdir -p "$RAW_DIR"
 
@@ -69,7 +74,7 @@ benchmark_repo() {
 
     local start=$(date +%s%3N)
 
-    timeout "$TIMEOUT_SECS" node "$SIGMAP" "$@" \
+    $TIMEOUT node "$SIGMAP" "$@" \
       > "$out_file" 2>"$out_dir/${mode}.stderr" || true
 
     local end=$(date +%s%3N)
@@ -117,7 +122,7 @@ CONFIG
   # ── Generate context once (capture raw token count) ─────────────────────
   local ctx_out="$out_dir/context_gen.json"
   local ctx_start=$(date +%s%3N)
-  timeout "$TIMEOUT_SECS" node "$SIGMAP" 2>/dev/null || true
+  $TIMEOUT node "$SIGMAP" 2>/dev/null || true
   local ctx_end=$(date +%s%3N)
   echo "{\"gen_ms\":$((ctx_end - ctx_start))}" > "$ctx_out"
 
@@ -146,7 +151,7 @@ EOF
 }
 
 export -f benchmark_repo
-export SIGMAP REPOS_DIR RAW_DIR TIMEOUT_SECS
+export SIGMAP REPOS_DIR RAW_DIR TIMEOUT_SECS TIMEOUT
 export -A LANG_MAP 2>/dev/null || true   # bash 4.4+ only
 
 # ── Discover all cloned repos ────────────────────────────────────────────────
