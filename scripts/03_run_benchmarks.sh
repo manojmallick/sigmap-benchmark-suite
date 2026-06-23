@@ -102,12 +102,13 @@ benchmark_repo() {
 
   # ── sigmap config: language srcDirs + a high-coverage base so retrieval
   #    expected_files are included (signatures stay tiny, so reduction holds).
-  local base='"maxDepth":10,"autoMaxTokens":false,"maxTokens":200000,"coverageTarget":0.9'
+  local base='"maxDepth":12,"autoMaxTokens":false,"maxTokens":200000,"coverageTarget":0.9'
+  # JVM projects are typically multi-module (source in <module>/src/main/...),
+  # so scan the whole tree ("."); excludes drop build output and tests.
+  local jvm_excl='"exclude":["node_modules",".git","dist","build","out","target","test","tests","docs","project",".gradle"]'
   case "$lang" in
-    Java)   echo "{\"srcDirs\":[\"src/main/java\",\"src/main/kotlin\",\"src/test/java\",\"src\"],$base}" > gen-context.config.json ;;
-    Kotlin) echo "{\"srcDirs\":[\"src/main/kotlin\",\"src/main/java\",\"app/src/main/kotlin\",\"app/src/main\",\"src\"],$base}" > gen-context.config.json ;;
+    Java|Kotlin|Scala) echo "{\"srcDirs\":[\".\"],$jvm_excl,$base}" > gen-context.config.json ;;
     Go)     echo "{\"srcDirs\":[\"cmd\",\"internal\",\"pkg\",\"api\",\"handler\",\"middleware\",\"src\",\".\"],$base}" > gen-context.config.json ;;
-    Scala)  echo "{\"srcDirs\":[\"src/main/scala\",\"src\",\"app\"],$base}" > gen-context.config.json ;;
     *)      echo "{$base}" > gen-context.config.json ;;
   esac
 
