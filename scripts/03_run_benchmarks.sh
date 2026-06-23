@@ -65,12 +65,29 @@ lang_of() {
   esac
 }
 
+# Fallback: detect language by dominant source extension, for repos not in the
+# label map above (so arbitrary/extended repos still group correctly).
+detect_lang() {
+  local ext
+  ext=$(find "$1" -type f 2>/dev/null \
+    | grep -oiE '\.(tsx?|jsx?|py|java|kt|go|rs|cs|rb|php|swift|dart|scala|vue|svelte)$' \
+    | tr 'A-Z' 'a-z' | sort | uniq -c | sort -rn | head -1 | grep -oE '\.[a-z]+$')
+  case "$ext" in
+    .ts|.tsx) echo TypeScript ;; .js|.jsx) echo JavaScript ;; .py) echo Python ;;
+    .java) echo Java ;; .kt) echo Kotlin ;; .go) echo Go ;; .rs) echo Rust ;;
+    .cs) echo CSharp ;; .rb) echo Ruby ;; .php) echo PHP ;; .swift) echo Swift ;;
+    .dart) echo Dart ;; .scala) echo Scala ;; .vue) echo Vue ;; .svelte) echo Svelte ;;
+    *) echo Unknown ;;
+  esac
+}
+
 # ── Benchmark one repo ───────────────────────────────────────────────────────
 benchmark_repo() {
   local label="$1"
   local repo_path="$REPOS_DIR/$label"
   local out_dir="$RAW_DIR/$label"
   local lang="$(lang_of "$label")"
+  [ "$lang" = "Unknown" ] && lang="$(detect_lang "$repo_path")"
 
   [ -d "$repo_path" ] || { echo "[SKIP] $label — not cloned"; return; }
 
@@ -107,7 +124,7 @@ benchmark_repo() {
   # so scan the whole tree ("."); excludes drop build output and tests.
   local jvm_excl='"exclude":["node_modules",".git","dist","build","out","target","test","tests","docs","project",".gradle"]'
   case "$lang" in
-    Java|Kotlin|Scala) echo "{\"srcDirs\":[\".\"],$jvm_excl,$base}" > gen-context.config.json ;;
+    Java|Kotlin|Scala|Unknown) echo "{\"srcDirs\":[\".\"],$jvm_excl,$base}" > gen-context.config.json ;;
     Go)     echo "{\"srcDirs\":[\"cmd\",\"internal\",\"pkg\",\"api\",\"handler\",\"middleware\",\"src\",\".\"],$base}" > gen-context.config.json ;;
     *)      echo "{$base}" > gen-context.config.json ;;
   esac
@@ -160,7 +177,7 @@ EOF
   echo "[DONE]  $label — files: $file_count"
 }
 
-export -f benchmark_repo lang_of now_ms
+export -f benchmark_repo lang_of detect_lang now_ms
 export SIGMAP REPOS_DIR RAW_DIR TIMEOUT_SECS TIMEOUT
 
 # ── Discover all cloned repos ────────────────────────────────────────────────
