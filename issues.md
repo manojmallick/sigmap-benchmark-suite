@@ -84,6 +84,28 @@ Repos outside the hardcoded label map had no language → wrong config.
 
 ---
 
+## Task benchmark (end-to-end proof)
+
+`scripts/task-benchmark.mjs` answers real coding tasks (from the curated task
+files) two ways and measures deterministic tokens/cost + best-of-N latency +
+retrieval correctness + groundedness:
+
+```bash
+GEMINI_API_KEY=... node scripts/task-benchmark.mjs ~/repos/flask \
+  ~/sigmap/benchmarks/tasks/flask.jsonl 3 5
+```
+
+Proof (gemini-2.5-flash, temp 0):
+- **flask:** without 90k tok/$0.027/task → with SigMap ~2k → **97.8% fewer
+  tokens, 40× cheaper, 3/3 right file**.
+- **gin:** without 208k → with ~1.3k → **99.4% fewer tokens, 137× cheaper,
+  2/3 right file** (gin-t002 = lexical-match miss, see ISSUE-2).
+
+Prompt tokens are deterministic (reported by the model); cost is derived;
+latency is best-of-N (LLM timing is inherently noisy). Token/cost/retrieval
+are the rock-solid proof; time is a softer (still favorable) signal that grows
+with repo size.
+
 ## How to reproduce
 
 ```bash
