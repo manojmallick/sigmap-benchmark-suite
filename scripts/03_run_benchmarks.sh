@@ -18,42 +18,76 @@ REPOS_DIR="$HOME/repos"
 RAW_DIR="$HOME/results/raw"
 TIMEOUT_SECS=120          # skip repo if any single command exceeds this
 PARALLEL_JOBS=4           # repos to process in parallel (memory-safe on c2-standard-8)
+# `timeout` is Linux-only; macOS has none (or `gtimeout` via coreutils). Fall
+# back to no hard timeout so the suite runs locally on macOS too.
+if command -v timeout >/dev/null 2>&1; then TIMEOUT="timeout $TIMEOUT_SECS";
+elif command -v gtimeout >/dev/null 2>&1; then TIMEOUT="gtimeout $TIMEOUT_SECS";
+else TIMEOUT=""; fi
+
+# Millisecond clock. GNU `date +%s%3N` is not portable (BSD/macOS date emits a
+# literal "3N"), so prefer python3, then GNU date, then second precision.
+if command -v python3 >/dev/null 2>&1; then
+  now_ms(){ python3 -c 'import time;print(int(time.time()*1000))'; }
+elif date +%s%3N 2>/dev/null | grep -qE '^[0-9]+$'; then
+  now_ms(){ date +%s%3N; }
+else
+  now_ms(){ echo $(( $(date +%s) * 1000 )); }
+fi
 
 mkdir -p "$RAW_DIR"
 
-# Metadata: language map (label → language)
-declare -A LANG_MAP=(
-  [typescript-compiler]=TypeScript [vscode]=TypeScript [nextjs]=TypeScript
-  [nestjs]=TypeScript [prisma]=TypeScript [azure-sdk-js]=TypeScript
-  [aws-cdk]=TypeScript [turborepo]=TypeScript
-  [express]=JavaScript [react]=JavaScript [webpack]=JavaScript
-  [jest]=JavaScript [lodash]=JavaScript
-  [django]=Python [flask]=Python [fastapi]=Python
-  [scikit-learn]=Python [requests]=Python
-  [spring-boot]=Java [elasticsearch]=Java [kafka]=Java [retrofit]=Java
-  [ktor]=Kotlin [kotlin-lang]=Kotlin [android-arch]=Kotlin
-  [gin]=Go [fiber]=Go [kubernetes]=Go [terraform]=Go
-  [tokio]=Rust [actix-web]=Rust [serde]=Rust [rustfmt]=Rust
-  [aspnetcore]=CSharp [efcore]=CSharp [orleans]=CSharp
-  [rails]=Ruby [sidekiq]=Ruby [devise]=Ruby
-  [laravel]=PHP [symfony]=PHP [composer]=PHP
-  [alamofire]=Swift [vapor]=Swift [swiftformat]=Swift
-  [flutter]=Dart [flutterfire]=Dart [riverpod]=Dart
-  [spark]=Scala [akka]=Scala
-  [vue-core]=Vue [vuetify]=Vue [nuxt]=Vue
-  [svelte]=Svelte [sveltekit]=Svelte
-  [bootstrap]=HTML_CSS [tailwindcss]=CSS [foundation]=SCSS
-  [grafana]=YAML_Mixed [ansible]=YAML_Mixed
-  [nvm]=Shell [ohmyzsh]=Shell
-  [docker-official]=Dockerfile [bitnami-containers]=Dockerfile
-)
+# Metadata: label → language. A case function (not `declare -A`) so this runs
+# on macOS's bash 3.2, which has no associative arrays.
+lang_of() {
+  case "$1" in
+    typescript-compiler|vscode|nextjs|nestjs|prisma|azure-sdk-js|aws-cdk|turborepo) echo TypeScript ;;
+    express|react|webpack|jest|lodash) echo JavaScript ;;
+    django|flask|fastapi|scikit-learn|requests) echo Python ;;
+    spring-boot|elasticsearch|kafka|retrofit) echo Java ;;
+    ktor|kotlin-lang|android-arch) echo Kotlin ;;
+    gin|fiber|kubernetes|terraform) echo Go ;;
+    tokio|actix-web|serde|rustfmt) echo Rust ;;
+    aspnetcore|efcore|orleans) echo CSharp ;;
+    rails|sidekiq|devise) echo Ruby ;;
+    laravel|symfony|composer) echo PHP ;;
+    alamofire|vapor|swiftformat) echo Swift ;;
+    flutter|flutterfire|riverpod) echo Dart ;;
+    spark|akka) echo Scala ;;
+    vue-core|vuetify|nuxt) echo Vue ;;
+    svelte|sveltekit) echo Svelte ;;
+    bootstrap) echo HTML_CSS ;;
+    tailwindcss) echo CSS ;;
+    foundation) echo SCSS ;;
+    grafana|ansible) echo YAML_Mixed ;;
+    nvm|ohmyzsh) echo Shell ;;
+    docker-official|bitnami-containers) echo Dockerfile ;;
+    *) echo Unknown ;;
+  esac
+}
+
+# Fallback: detect language by dominant source extension, for repos not in the
+# label map above (so arbitrary/extended repos still group correctly).
+detect_lang() {
+  local ext
+  ext=$(find "$1" -type f 2>/dev/null \
+    | grep -oiE '\.(tsx?|jsx?|py|java|kt|go|rs|cs|rb|php|swift|dart|scala|vue|svelte)$' \
+    | tr 'A-Z' 'a-z' | sort | uniq -c | sort -rn | head -1 | grep -oE '\.[a-z]+$')
+  case "$ext" in
+    .ts|.tsx) echo TypeScript ;; .js|.jsx) echo JavaScript ;; .py) echo Python ;;
+    .java) echo Java ;; .kt) echo Kotlin ;; .go) echo Go ;; .rs) echo Rust ;;
+    .cs) echo CSharp ;; .rb) echo Ruby ;; .php) echo PHP ;; .swift) echo Swift ;;
+    .dart) echo Dart ;; .scala) echo Scala ;; .vue) echo Vue ;; .svelte) echo Svelte ;;
+    *) echo Unknown ;;
+  esac
+}
 
 # ── Benchmark one repo ───────────────────────────────────────────────────────
 benchmark_repo() {
   local label="$1"
   local repo_path="$REPOS_DIR/$label"
   local out_dir="$RAW_DIR/$label"
-  local lang="${LANG_MAP[$label]:-Unknown}"
+  local lang="$(lang_of "$label")"
+  [ "$lang" = "Unknown" ] && lang="$(detect_lang "$repo_path")"
 
   [ -d "$repo_path" ] || { echo "[SKIP] $label — not cloned"; return; }
 
@@ -67,12 +101,12 @@ benchmark_repo() {
     local out_file="$out_dir/${mode}.json"
     local time_file="$out_dir/${mode}.time"
 
-    local start=$(date +%s%3N)
+    local start=$(now_ms)
 
-    timeout "$TIMEOUT_SECS" node "$SIGMAP" "$@" \
+    $TIMEOUT node "$SIGMAP" "$@" \
       > "$out_file" 2>"$out_dir/${mode}.stderr" || true
 
-    local end=$(date +%s%3N)
+    local end=$(now_ms)
     echo "$((end - start))" > "$time_file"
 
     # validate JSON — replace with error envelope if broken
@@ -83,29 +117,27 @@ benchmark_repo() {
 
   cd "$repo_path"
 
-  # ── Create language-specific config for sigmap ──────────────────────────
+  # ── sigmap config: language srcDirs + a high-coverage base so retrieval
+  #    expected_files are included (signatures stay tiny, so reduction holds).
+  local base='"maxDepth":12,"autoMaxTokens":false,"maxTokens":200000,"coverageTarget":0.9'
+  # JVM projects are typically multi-module (source in <module>/src/main/...),
+  # so scan the whole tree ("."); excludes drop build output and tests.
+  local jvm_excl='"exclude":["node_modules",".git","dist","build","out","target","test","tests","docs","project",".gradle"]'
   case "$lang" in
-    Java)
-      cat > gen-context.config.json <<'CONFIG'
-{"srcDirs": ["src/main/java", "src/main/kotlin", "src/test/java", "src"]}
-CONFIG
-      ;;
-    Kotlin)
-      cat > gen-context.config.json <<'CONFIG'
-{"srcDirs": ["src/main/kotlin", "src/main/java", "app/src/main/kotlin", "app/src/main", "src"]}
-CONFIG
-      ;;
-    Go)
-      cat > gen-context.config.json <<'CONFIG'
-{"srcDirs": ["cmd", "internal", "pkg", "api", "handler", "middleware", "src"]}
-CONFIG
-      ;;
-    Scala)
-      cat > gen-context.config.json <<'CONFIG'
-{"srcDirs": ["src/main/scala", "src", "app"]}
-CONFIG
-      ;;
+    Java|Kotlin|Scala|Unknown) echo "{\"srcDirs\":[\".\"],$jvm_excl,$base}" > gen-context.config.json ;;
+    Go)     echo "{\"srcDirs\":[\"cmd\",\"internal\",\"pkg\",\"api\",\"handler\",\"middleware\",\"src\",\".\"],$base}" > gen-context.config.json ;;
+    *)      echo "{$base}" > gen-context.config.json ;;
   esac
+
+  # ── Retrieval tasks (for hit@5): drop the curated task set if the engine
+  #    ships one for this repo, so --benchmark can score retrieval. ──────────
+  if [ -f "$HOME/sigmap/benchmarks/tasks/$label.jsonl" ]; then
+    mkdir -p benchmarks/tasks
+    cp "$HOME/sigmap/benchmarks/tasks/$label.jsonl" benchmarks/tasks/retrieval.jsonl
+  fi
+
+  # Generate context once up front so --benchmark scores against this config.
+  $TIMEOUT node "$SIGMAP" >/dev/null 2>&1 || true
 
   # ── Core benchmark modes ────────────────────────────────────────────────
   run_cmd "benchmark"     --benchmark    --json
@@ -116,9 +148,9 @@ CONFIG
 
   # ── Generate context once (capture raw token count) ─────────────────────
   local ctx_out="$out_dir/context_gen.json"
-  local ctx_start=$(date +%s%3N)
-  timeout "$TIMEOUT_SECS" node "$SIGMAP" 2>/dev/null || true
-  local ctx_end=$(date +%s%3N)
+  local ctx_start=$(now_ms)
+  $TIMEOUT node "$SIGMAP" 2>/dev/null || true
+  local ctx_end=$(now_ms)
   echo "{\"gen_ms\":$((ctx_end - ctx_start))}" > "$ctx_out"
 
   # ── Count source files ───────────────────────────────────────────────────
@@ -145,9 +177,8 @@ EOF
   echo "[DONE]  $label — files: $file_count"
 }
 
-export -f benchmark_repo
-export SIGMAP REPOS_DIR RAW_DIR TIMEOUT_SECS
-export -A LANG_MAP 2>/dev/null || true   # bash 4.4+ only
+export -f benchmark_repo lang_of detect_lang now_ms
+export SIGMAP REPOS_DIR RAW_DIR TIMEOUT_SECS TIMEOUT
 
 # ── Discover all cloned repos ────────────────────────────────────────────────
 LABELS=()
@@ -167,4 +198,4 @@ echo ""
 COMPLETED=$(find "$RAW_DIR" -name "meta.json" | wc -l)
 log "✅ Benchmark complete: $COMPLETED / $TOTAL repos processed"
 info "Raw results in: $RAW_DIR"
-info "Next step: run  04_aggregate_results.js"
+info "Next step: node scripts/aggregate.mjs   (or just use run_all.sh)"

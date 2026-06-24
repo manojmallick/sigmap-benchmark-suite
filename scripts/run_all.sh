@@ -18,22 +18,22 @@ header() {
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-header "STEP 1/5 — VM Setup"
-bash "$SCRIPT_DIR/01_setup_vm.sh"
+header "STEP 1/4 — Setup (deps + SigMap engine + dirs)"
+bash "$SCRIPT_DIR/01_setup.sh"
 
-header "STEP 2/5 — Clone 60+ Repos"
+header "STEP 2/4 — Clone repos"
 bash "$SCRIPT_DIR/02_clone_repos.sh"
 
-header "STEP 3/5 — Run Benchmarks"
+header "STEP 3/4 — Run benchmarks (per repo → ~/results/raw)"
 bash "$SCRIPT_DIR/03_run_benchmarks.sh"
 
-header "STEP 4/5 — Aggregate Results"
-node "$SCRIPT_DIR/04_aggregate_results.js"
-
-header "STEP 5/5 — Upload to GCS"
-bash "$SCRIPT_DIR/05_upload_results.sh"
+header "STEP 4/4 — Aggregate (exports + reports)"
+node "$SCRIPT_DIR/aggregate.mjs"
 
 echo ""
 echo -e "${BOLD}${GREEN}🎉 Full benchmark suite complete!${NC}"
-echo "   Check: ~/results/reports/report.md"
-echo "   Check: ~/results/reports/academic_table.md"
+echo "   Exports: ~/results/exports/results.{csv,json,jsonl}"
+echo "   Report : ~/results/reports/report.md"
+echo "   Table  : ~/results/reports/academic_table.md"
+echo ""
+echo "   (Optional GCS upload: bash $SCRIPT_DIR/05_upload_results.sh)"
