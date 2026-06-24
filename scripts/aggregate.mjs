@@ -121,9 +121,22 @@ const csv = [
 ].join("\n");
 writeFileSync(join(EXPORT_DIR, "results.csv"), csv + "\n");
 
-// ── Per-language aggregation ────────────────────────────────────────────────
+// ── Segment unsupported languages (ISSUE-1) ─────────────────────────────────
+// SigMap supports a fixed language set; repos outside it (Clojure/Lua/C…) scan
+// empty or sparse and would distort the averages. Keep them out of the
+// headline stats and list them separately.
+const SUPPORTED = new Set([
+  "TypeScript", "JavaScript", "Python", "Java", "Kotlin", "Ruby", "PHP",
+  "Swift", "Scala", "Go", "Rust", "CSharp", "Vue", "Svelte", "Dart",
+  "HTML_CSS", "CSS", "SCSS", "Shell", "Dockerfile", "YAML_Mixed",
+]);
+const isSupported = (r) => SUPPORTED.has(r.language) && (r.reductionPct || 0) > 0;
+const supported = rows.filter(isSupported);
+const unsupported = rows.filter((r) => !isSupported(r));
+
+// ── Per-language aggregation (supported only) ───────────────────────────────
 const byLang = new Map();
-for (const r of rows) {
+for (const r of supported) {
   if (!byLang.has(r.language)) byLang.set(r.language, []);
   byLang.get(r.language).push(r);
 }
@@ -138,9 +151,9 @@ const langRows = [...byLang.entries()]
   }))
   .sort((a, b) => b.repos - a.repos);
 
-// ── Overall ─────────────────────────────────────────────────────────────────
-const totalRaw = rows.reduce((s, r) => s + (r.rawTokens || 0), 0);
-const totalFinal = rows.reduce((s, r) => s + (r.finalTokens || 0), 0);
+// ── Overall (supported only) ─────────────────────────────────────────────────
+const totalRaw = supported.reduce((s, r) => s + (r.rawTokens || 0), 0);
+const totalFinal = supported.reduce((s, r) => s + (r.finalTokens || 0), 0);
 const overallReduction = totalRaw ? (1 - totalFinal / totalRaw) * 100 : null;
 const stamp = new Date().toISOString();
 
@@ -150,22 +163,33 @@ const report = [
   ``,
   `Generated: ${stamp}`,
   ``,
-  `- Repositories: **${rows.length}**`,
-  `- Avg token reduction: **${pct(avg(rows.map((r) => r.reductionPct)))}**`,
+  `- Repositories: **${supported.length}** supported` +
+    (unsupported.length ? ` (+${unsupported.length} unsupported-language, excluded)` : ""),
+  `- Avg token reduction: **${pct(avg(supported.map((r) => r.reductionPct)))}**`,
   `- Overall token reduction: **${pct(overallReduction)}** (${totalRaw.toLocaleString()} → ${totalFinal.toLocaleString()} tokens)`,
-  `- Avg coverage: **${pct(avg(rows.map((r) => r.coveragePct)))}**`,
-  `- Avg health: **${(avg(rows.map((r) => r.healthScore)) ?? 0).toFixed(0)}/100**`,
-  `- Avg hit@5: **${pct(avg(rows.map((r) => r.hitAt5)))}**`,
+  `- Avg coverage: **${pct(avg(supported.map((r) => r.coveragePct)))}**`,
+  `- Avg health: **${(avg(supported.map((r) => r.healthScore)) ?? 0).toFixed(0)}/100**`,
+  `- Avg hit@5: **${pct(avg(supported.map((r) => r.hitAt5)))}**`,
   ``,
   `## Per repository`,
   ``,
   `| Repo | Lang | Files | Raw | Mapped | Reduction | Coverage | Health |`,
   `|---|---|--:|--:|--:|--:|--:|--:|`,
-  ...rows.map(
+  ...supported.map(
     (r) =>
       `| ${r.repo} | ${r.language} | ${r.fileCount ?? "—"} | ${r.rawTokens ?? "—"} | ${r.finalTokens ?? "—"} | ${pct(r.reductionPct)} | ${r.coverageGrade ?? "—"} ${r.coveragePct != null ? `(${r.coveragePct.toFixed(0)}%)` : ""} | ${r.healthScore ?? "—"}${r.healthGrade ?? ""} |`
   ),
   ``,
+  ...(unsupported.length
+    ? [
+        `## Excluded — unsupported language / unscannable (${unsupported.length})`,
+        ``,
+        `Outside SigMap's supported language set, so excluded from the stats above.`,
+        ``,
+        ...unsupported.map((r) => `- ${r.repo} (${r.language}, reduction ${pct(r.reductionPct)})`),
+        ``,
+      ]
+    : []),
 ].join("\n");
 writeFileSync(join(REPORT_DIR, "report.md"), report);
 
@@ -173,7 +197,8 @@ writeFileSync(join(REPORT_DIR, "report.md"), report);
 const academic = [
   `# SigMap Benchmark — Results by Language`,
   ``,
-  `Generated: ${stamp} · ${rows.length} repositories`,
+  `Generated: ${stamp} · ${supported.length} supported repositories` +
+    (unsupported.length ? ` (${unsupported.length} unsupported-language excluded)` : ""),
   ``,
   `| Language | Repos | Avg Token Reduction | Avg Coverage | Avg Health | Avg hit@5 |`,
   `|---|--:|--:|--:|--:|--:|`,
@@ -182,14 +207,14 @@ const academic = [
       `| ${l.language} | ${l.repos} | ${pct(l.avgReduction)} | ${pct(l.avgCoverage)} | ${(l.avgHealth ?? 0).toFixed(0)} | ${pct(l.avgHitAt5)} |`
   ),
   ``,
-  `| **Overall** | **${rows.length}** | **${pct(overallReduction)}** | — | — | **${pct(avg(rows.map((r) => r.hitAt5)))}** |`,
+  `| **Overall** | **${supported.length}** | **${pct(overallReduction)}** | — | — | **${pct(avg(supported.map((r) => r.hitAt5)))}** |`,
   ``,
 ].join("\n");
 writeFileSync(join(REPORT_DIR, "academic_table.md"), academic);
 
-console.log(`[aggregate] ${rows.length} repos`);
+console.log(`[aggregate] ${rows.length} repos (${supported.length} supported, ${unsupported.length} excluded)`);
 console.log(`[aggregate] exports → ${EXPORT_DIR} (results.{csv,json,jsonl})`);
 console.log(`[aggregate] reports → ${REPORT_DIR} (report.md, academic_table.md)`);
 console.log(
-  `[aggregate] overall reduction ${pct(overallReduction)} · avg ${pct(avg(rows.map((r) => r.reductionPct)))}`
+  `[aggregate] overall reduction ${pct(overallReduction)} · avg ${pct(avg(supported.map((r) => r.reductionPct)))}`
 );

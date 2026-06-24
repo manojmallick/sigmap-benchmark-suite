@@ -10,7 +10,13 @@ Legend: severity 🔴 high · 🟡 medium · 🟢 low — status ✅ fixed · �
 
 ## Open
 
-### ISSUE-1 · Unsupported languages scan empty/approximate · 🟡 · 🔧
+### ISSUE-1 · Unsupported languages scan empty/approximate · 🟡 · ✅
+**Resolved:** `aggregate.mjs` now segments unsupported repos (language outside
+SigMap's set, or 0% reduction) out of the headline stats into an "Excluded"
+section. 190 → 187 supported + 3 excluded (lua-core, nginx, transit-clj);
+avg reduction 94.9% → 95.4%. Original analysis below.
+
+<details><summary>original</summary>
 SigMap supports ~21 languages; repos outside that set don't extract real
 signatures.
 - **transit-clj** (Clojure) → 0% reduction (the only hard scan failure in 190).
@@ -21,6 +27,7 @@ signatures.
 - **Fix options:** (a) exclude unsupported-language repos from the run; or
   (b) add a `supported_language` flag in `meta.json` and have `aggregate.mjs`
   mark/segment them. Decision pending.
+</details>
 
 ### ISSUE-2 · hit@5 = 0% on laravel/riverpod · 🟡 · ✅
 Two distinct non-ranker causes (verified):
