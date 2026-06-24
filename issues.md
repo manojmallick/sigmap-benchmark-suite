@@ -60,11 +60,11 @@ contain a few stray `.js` were bucketed as JavaScript and dragged the average.
 - Residual JS laggards (html5-boilerplate, nvm) are tiny/low-signal repos —
   accepted (see ISSUE-4).
 
-### ISSUE-4 · Template/markup-heavy repos low reduction · 🟢 · 📌
-Expected, low priority (few code signatures by nature):
-- **helm-charts** 53.9% (YAML templates), **html5-boilerplate** 64.4% (HTML).
-- **Decision:** likely accept as-is; optionally note in the report that
-  markup/config repos are not the target use case.
+### ISSUE-4 · Template/markup-heavy repos low reduction · 🟢 · ✅ (accepted)
+**Accepted as expected behavior — won't fix.** helm-charts (YAML templates),
+html5-boilerplate (HTML), nvm (shell) have few code signatures by nature, so a
+lower reduction is correct. SigMap targets code, not markup/config; these are
+edge inputs, not failures.
 
 ---
 
