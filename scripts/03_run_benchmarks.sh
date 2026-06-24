@@ -120,13 +120,14 @@ benchmark_repo() {
   # ── sigmap config: language srcDirs + a high-coverage base so retrieval
   #    expected_files are included (signatures stay tiny, so reduction holds).
   local base='"maxDepth":12,"autoMaxTokens":false,"maxTokens":200000,"coverageTarget":0.9'
-  # JVM projects are typically multi-module (source in <module>/src/main/...),
-  # so scan the whole tree ("."); excludes drop build output and tests.
-  local jvm_excl='"exclude":["node_modules",".git","dist","build","out","target","test","tests","docs","project",".gradle"]'
+  # Comprehensive exclude: build output, tests, AND doc/i18n trees (docs sites
+  # ship many example .dart/.ts files that pollute scan + ranking — see riverpod).
+  local excl='"exclude":["node_modules",".git","dist","build","out","target","vendor",".gradle","project","test","tests","__tests__","spec","e2e","docs","doc","website","i18n","docusaurus","locales","examples","example","samples","benchmarks","fixtures","scripts"]'
   case "$lang" in
-    Java|Kotlin|Scala|Unknown) echo "{\"srcDirs\":[\".\"],$jvm_excl,$base}" > gen-context.config.json ;;
-    Go)     echo "{\"srcDirs\":[\"cmd\",\"internal\",\"pkg\",\"api\",\"handler\",\"middleware\",\"src\",\".\"],$base}" > gen-context.config.json ;;
-    *)      echo "{$base}" > gen-context.config.json ;;
+    # JVM is multi-module (source in <module>/src/main/...), so scan whole tree.
+    Java|Kotlin|Scala|Unknown) echo "{\"srcDirs\":[\".\"],$excl,$base}" > gen-context.config.json ;;
+    Go)     echo "{\"srcDirs\":[\"cmd\",\"internal\",\"pkg\",\"api\",\"handler\",\"middleware\",\"src\",\".\"],$excl,$base}" > gen-context.config.json ;;
+    *)      echo "{\"srcDirs\":[\".\"],$excl,$base}" > gen-context.config.json ;;
   esac
 
   # ── Retrieval tasks (for hit@5): drop the curated task set if the engine
