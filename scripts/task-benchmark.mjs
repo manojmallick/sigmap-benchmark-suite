@@ -141,7 +141,18 @@ const lines = [
   ``,
 ].join("\n");
 
-const outFile = join(process.env.HOME, "results", "reports", `task-benchmark-${repoPath.split("/").pop()}.md`);
+const repoName = repoPath.split("/").pop();
+const outFile = join(process.env.HOME, "results", "reports", `task-benchmark-${repoName}.md`);
 writeFileSync(outFile, lines);
+// Machine-readable sidecar for consolidation (task-benchmark-all.mjs).
+writeFileSync(outFile.replace(/\.md$/, ".json"), JSON.stringify({
+  repo: repoName, model: MODEL,
+  totals: {
+    n: rows.length, hits: rows.filter((r) => r.hit).length,
+    woTok: sum("woTok"), wTok: sum("wTok"), woCost: sum("woCost"), wCost: sum("wCost"),
+    woMs: sum("woMs"), wMs: sum("wMs"),
+  },
+  rows,
+}, null, 2));
 console.log(lines);
 console.error(`\n[task-bench] written: ${outFile}`);
