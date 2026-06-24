@@ -46,12 +46,19 @@ Two distinct non-ranker causes (verified):
   lexical misses (query shares no tokens with the signatures). Ranker
   limitation, not config; would need stemming/semantic ranking upstream.
 
-### ISSUE-3 · JavaScript avg reduction soft (88.7%) · 🟢 · 🔧
-JavaScript is the lowest language band (19 repos, 88.7%) vs 94–98% elsewhere.
-- **Suspected cause:** a few JS repos heavy on bundled/minified/vendored or
-  config files diluting signal.
-- **Fix:** spot-check the lowest JS repos (`results/exports/results.csv`),
-  tighten `exclude` (dist/vendor/min.js) if confirmed.
+### ISSUE-3 · JavaScript avg reduction soft (88.7%) · 🟢 · ✅
+**Root cause: language mislabeling, not SigMap.** `detect_lang` only counted
+*supported* extensions, so repos that are actually Haskell (cabal, ghc),
+Clojure (transit-clj) or C/C++ (mongodb, redis, git, linux, tensorflow…) but
+contain a few stray `.js` were bucketed as JavaScript and dragged the average.
+- **Fix:** `detect_lang` now counts unsupported extensions too (hs/clj/lua/c…)
+  and returns `Unknown` when one dominates (→ excluded by ISSUE-1).
+  `scripts/relabel-languages.mjs` re-applies this to existing `meta.json`.
+- **Result:** 31 repos relabeled (incl. ansible→Python, grafana→Go,
+  vue-core→TypeScript; mongodb/redis/linux/tensorflow→Unknown). JavaScript
+  **88.7% → 92.8%**; 190 → **170 supported** (20 unsupported excluded).
+- Residual JS laggards (html5-boilerplate, nvm) are tiny/low-signal repos —
+  accepted (see ISSUE-4).
 
 ### ISSUE-4 · Template/markup-heavy repos low reduction · 🟢 · 📌
 Expected, low priority (few code signatures by nature):

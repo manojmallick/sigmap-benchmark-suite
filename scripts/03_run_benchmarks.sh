@@ -69,8 +69,11 @@ lang_of() {
 # label map above (so arbitrary/extended repos still group correctly).
 detect_lang() {
   local ext
+  # Count the dominant extension among supported AND common unsupported langs
+  # (hs/clj/lua/c/...). If an unsupported one dominates, fall through to Unknown
+  # so we don't mislabel e.g. a Haskell repo as JavaScript on a few stray .js.
   ext=$(find "$1" -type f 2>/dev/null \
-    | grep -oiE '\.(tsx?|jsx?|py|java|kt|go|rs|cs|rb|php|swift|dart|scala|vue|svelte)$' \
+    | grep -oiE '\.(tsx?|jsx?|py|java|kt|go|rs|cs|rb|php|swift|dart|scala|vue|svelte|hs|cljc?|cljs|lua|c|h|cpp|cc|hpp|ex|exs|erl|ml|jl|r|pl)$' \
     | tr 'A-Z' 'a-z' | sort | uniq -c | sort -rn | head -1 | grep -oE '\.[a-z]+$')
   case "$ext" in
     .ts|.tsx) echo TypeScript ;; .js|.jsx) echo JavaScript ;; .py) echo Python ;;
