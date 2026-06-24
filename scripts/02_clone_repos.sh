@@ -75,7 +75,7 @@ declare -a REPOS=(
   "https://github.com/heartcombo/devise               devise                  Ruby"
 
   # ── PHP (3) ─────────────────────────────────────────────────────────────────
-  "https://github.com/laravel/laravel                 laravel                 PHP"
+  "https://github.com/laravel/framework               laravel                 PHP"
   "https://github.com/symfony/symfony                 symfony                 PHP"
   "https://github.com/composer/composer               composer                PHP"
 

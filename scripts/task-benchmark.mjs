@@ -42,8 +42,8 @@ function sh(args) {
 
 /** Concatenate raw source (the "without SigMap" baseline), capped. */
 function rawSource() {
-  const SKIP = /(^|\/)(node_modules|\.git|dist|build|out|target|test|tests|__tests__|docs|examples)\//;
-  const EXT = /\.(js|mjs|cjs|jsx|ts|tsx|py|go|rb|java|kt|rs|cs|php|swift|scala)$/i;
+  const SKIP = /(^|\/)(node_modules|\.git|dist|build|out|target|vendor|test|tests|__tests__|docs|doc|website|i18n|docusaurus|locales|examples)\//;
+  const EXT = /\.(js|mjs|cjs|jsx|ts|tsx|py|go|rb|java|kt|kts|rs|cs|php|swift|scala|dart|vue|svelte)$/i;
   let text = "";
   const walk = (dir, rel = "") => {
     if (text.length > RAW_CAP) return;
@@ -98,6 +98,14 @@ function judge(contextMd, answer) {
 }
 
 // ── Run ──────────────────────────────────────────────────────────────────────
+// Write a clean high-coverage config (whole-tree scan, doc/build excludes) so
+// ranking isn't polluted by docs/i18n example files (see riverpod, ISSUE-2).
+writeFileSync(join(repoPath, "gen-context.config.json"), JSON.stringify({
+  srcDirs: ["."], maxDepth: 12, autoMaxTokens: false, maxTokens: 200000, coverageTarget: 0.9,
+  exclude: ["node_modules", ".git", "dist", "build", "out", "target", "vendor", ".gradle",
+    "test", "tests", "__tests__", "spec", "e2e", "docs", "doc", "website", "i18n",
+    "docusaurus", "locales", "examples", "example", "samples", "benchmarks", "fixtures", "scripts"],
+}));
 sh([]); // generate context once
 const raw = rawSource();
 const tasks = readFileSync(tasksFile, "utf8").trim().split("\n").map((l) => JSON.parse(l)).slice(0, MAX_TASKS);

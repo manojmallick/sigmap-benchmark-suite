@@ -22,15 +22,22 @@ signatures.
   (b) add a `supported_language` flag in `meta.json` and have `aggregate.mjs`
   mark/segment them. Decision pending.
 
-### ISSUE-2 · hit@5 = 0% on some task-repos · 🟡 · 🔧
-Curated retrieval tasks score 0 even though the repo scans fine.
-- **laravel** (0%, reduction 61.5%), **riverpod** (0%), **dart** repos (0%).
-- **Root cause (suspected):** expected_files for these tasks aren't included in
-  the generated context (coverage budget / srcDirs), so they can never appear
-  in the top-5 — same class of bug as the JVM 0% (ISSUE-5, fixed).
-- **Fix:** raise coverage for these repos (srcDirs/maxDepth/coverageTarget) so
-  expected_files are included, then re-benchmark. Verify per task with
-  `--query`.
+### ISSUE-2 · hit@5 = 0% on laravel/riverpod · 🟡 · ✅
+Two distinct non-ranker causes (verified):
+- **laravel — wrong repo.** Tasks target `src/Illuminate/...` (laravel/**framework**)
+  but the suite cloned laravel/**laravel** (the app skeleton); expected files
+  don't exist there. Fixed: `02_clone_repos.sh` now uses `laravel/framework`.
+  → retrieval 0/3 → **2/3**.
+- **riverpod — docs pollution.** Expected file existed but the top-5 were all
+  `website/i18n/.../*.dart` Docusaurus examples crowding it out. Fixed: excludes
+  now drop `website/i18n/docusaurus/locales/docs/examples` for every config.
+  → retrieval 0/3 → **1/3**.
+- **Also fixed a task-benchmark bug:** `rawSource()` EXT list was missing
+  `.dart/.vue/.svelte`, so the "without" baseline for those languages was empty
+  (or counted doc `.ts`). Now included → correct baselines.
+- **Residual:** laravel-t002, riverpod-t002/t003 still miss — genuine TF-IDF
+  lexical misses (query shares no tokens with the signatures). Ranker
+  limitation, not config; would need stemming/semantic ranking upstream.
 
 ### ISSUE-3 · JavaScript avg reduction soft (88.7%) · 🟢 · 🔧
 JavaScript is the lowest language band (19 repos, 88.7%) vs 94–98% elsewhere.
