@@ -68,7 +68,9 @@ function sigmapContext(repoUrl) {
 
 function buildPrompt(task, arm) {
   const head = `Repository: ${task.repoUrl}${task.commit ? ` (work from commit ${task.commit})` : ""}`;
-  const body = `Task: ${task.prompt}\nImplement the change, add a test, and open a pull request.`;
+  // Output a diff instead of pushing — Devin has no write access to these
+  // upstream repos, so a PR would block. Work fully autonomously.
+  const body = `Task: ${task.prompt}\nImplement the change and add a test. Work autonomously without asking for confirmation. In your FINAL message, output the COMPLETE unified diff (git diff format) of every file you created or changed. Do NOT push to GitHub or open a pull request.`;
   if (arm === "A") return `${head}\n\n${body}`;
   const ctx = sigmapContext(task.repoUrl);
   return `${head}\n\nVerified SigMap context map (function & class signatures — the files that matter, ~97% fewer tokens than the full source):\n\n${ctx}\n\n${body}`;
@@ -103,13 +105,18 @@ async function runSession(task, arm, rep) {
   }
   writeFileSync(join(SESS_DIR, `${id0}.json`), JSON.stringify(s, null, 2)); // raw for inspection
   const msgs = Array.isArray(s.messages) ? s.messages : [];
+  const lastDevin = [...msgs].reverse().find((m) => m.type === "devin_message")?.message || "";
+  const hasDiff = /(^|\n)(diff --git|\+\+\+ |@@ )/.test(lastDevin) || /```diff/.test(lastDevin);
+  const editedExpected = (task.expected_files || []).some((f) => lastDevin.includes(f) || lastDevin.includes(f.split("/").pop()));
   return {
     task: task.id, arm, rep, sessionId: sid,
     status: s.status_enum || s.status,
     durationMs: Date.now() - t0,
     steps: msgs.length,
     devinMessages: msgs.filter((m) => m.type === "devin_message").length,
-    acus: extractAcus(s),
+    acus: extractAcus(s), // almost always null — Devin's session API omits ACUs
+    hasDiff, editedExpected,
+    success: hasDiff,
     pr: s.pull_request?.url || s.pull_request || null,
     expectedFiles: task.expected_files || [],
   };
@@ -157,11 +164,14 @@ const report = [
   `| Wall-clock (min) | ${fmt(agg("A", "durationMs") / 60000)} | ${fmt(agg("B", "durationMs") / 60000)} | ${saving("durationMs")} |`,
   `| Steps | ${fmt(agg("A", "steps"))} | ${fmt(agg("B", "steps"))} | ${saving("steps")} |`,
   ``,
-  `Success (PR opened): A ${results.filter((r) => r.arm === "A" && r.pr).length}/${results.filter((r) => r.arm === "A").length} · ` +
-  `B ${results.filter((r) => r.arm === "B" && r.pr).length}/${results.filter((r) => r.arm === "B").length}`,
+  `Success (produced a diff): A ${results.filter((r) => r.arm === "A" && r.success).length}/${results.filter((r) => r.arm === "A").length} · ` +
+  `B ${results.filter((r) => r.arm === "B" && r.success).length}/${results.filter((r) => r.arm === "B").length}`,
+  `Edited an expected file: A ${results.filter((r) => r.arm === "A" && r.editedExpected).length} · B ${results.filter((r) => r.arm === "B" && r.editedExpected).length}`,
   ``,
-  `⚠ ACUs are Devin's billing unit (raw tokens aren't exposed). If "ACUs" shows —,`,
-  `the field name differs; inspect results/devin/sessions/*.json to locate it.`,
+  `⚠ ACUs (Devin's billing unit) are NOT returned by the session API — read them`,
+  `from the Devin dashboard per session and fill them in. Wall-clock is the only`,
+  `auto-captured cost proxy. SigMap's exploration savings show on HARDER tasks in`,
+  `LARGER/less-familiar repos — easy tasks in famous repos (flask) show ~no delta.`,
   ``,
 ].join("\n");
 mkdirSync(join(homedir(), "results", "reports"), { recursive: true });
