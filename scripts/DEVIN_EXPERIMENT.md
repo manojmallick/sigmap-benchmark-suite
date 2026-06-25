@@ -9,7 +9,7 @@ measures the deltas:
 ## Metrics
 | Measured (from Devin) | Honest note |
 |---|---|
-| **ACUs / task** | Devin's billing unit = your real cost. Raw tokens are **not** exposed. |
+| **ACUs / task** | Devin's billing unit = your real cost. **NOT in the session API — read from the dashboard.** Raw tokens not exposed. |
 | **Wall-clock** | session duration |
 | **Steps** | message/action count in the session |
 | **Success** | PR opened (Tier 1); test goes green (Tier 2) |
