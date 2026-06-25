@@ -1,0 +1,5 @@
+{"id":"flask-cache-header","repoUrl":"https://github.com/pallets/flask","prompt":"Add a helper on the response/app layer to set a Cache-Control max-age header for a view, and add a unit test for it.","expected_files":["src/flask/app.py","src/flask/wrappers.py"]}
+{"id":"express-query-int","repoUrl":"https://github.com/expressjs/express","prompt":"Add a small utility to read a query-string parameter as an integer with a default value, and add a test.","expected_files":["lib/request.js","lib/utils.js"]}
+{"id":"gin-request-id","repoUrl":"https://github.com/gin-gonic/gin","prompt":"Add middleware that assigns a unique request ID and sets it on the response header, with a test.","expected_files":["gin.go","context.go"]}
+{"id":"fastapi-apikey-dep","repoUrl":"https://github.com/tiangolo/fastapi","prompt":"Add a reusable dependency that extracts and validates an API key from the X-API-Key header, with a test.","expected_files":["fastapi/security/api_key.py"]}
+{"id":"zod-uuid-refine","repoUrl":"https://github.com/colinhacks/zod","prompt":"Add a string-schema refinement that validates a UUID v4, with a test.","expected_files":["packages/zod/src/v4/classic/schemas.ts"]}
