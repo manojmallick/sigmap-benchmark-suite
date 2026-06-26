@@ -141,3 +141,17 @@ node scripts/aggregate.mjs ~/results/raw ~/results
 ```
 Outputs: `~/results/reports/{report.md,academic_table.md}` ·
 `~/results/exports/results.{csv,json,jsonl}`
+
+### ISSUE-10 · Ranked context can hurt the agent when it misses · 🟡 · partially fixed
+Devin A/B run: SigMap helped on hits (vue-core 30.6→8.9min, okhttp 7.0→3.8min)
+but HURT on misses (rust-analyzer 2.1→3.5min, akka 12.5→14.2min). Root cause:
+the injected top-K did **not** contain the target file —
+- akka: query matched `akka-docs/*.md` prose; even after excluding docs, the
+  TF-IDF ranker still didn't surface `cluster/Cluster.scala` (ranked neighbors:
+  ClusterEvent/ClusterJmx/ClusterSingletonManager).
+- rust-analyzer: ranked `ast/traits.rs`, `ast/make.rs` — not `ast.rs`.
+Injected context was tiny (~1.3k–2.8k tokens) → a relevance failure, not size.
+- **Fixed (harness):** drop `.md/.rst/.txt` from the injected ranked context.
+- **Residual (upstream):** the ranker finds *neighbors not the target* — the
+  core TF-IDF limitation (no stemming/semantics). Feeding near-miss files can
+  mislead the agent. Real fix lives in the SigMap core ranker.

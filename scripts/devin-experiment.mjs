@@ -59,7 +59,10 @@ function sigmapRanked(repoUrl, query) {
       exclude: ["node_modules", ".git", "dist", "build", "target", "vendor", "test", "tests", "docs", "website", "i18n", "examples"],
     }));
     execFileSync(process.execPath, [SIGMAP], { cwd: dir, stdio: "ignore", timeout: 180000 });
-    const ranked = JSON.parse(execFileSync(process.execPath, [SIGMAP, "--query", query, "--top", "10", "--json"], { cwd: dir, encoding: "utf8", timeout: 120000 })).results || [];
+    let ranked = JSON.parse(execFileSync(process.execPath, [SIGMAP, "--query", query, "--top", "15", "--json"], { cwd: dir, encoding: "utf8", timeout: 120000 })).results || [];
+    // Drop prose/doc files (.md/.rst/…): natural-language tasks match docs over
+    // code, which then crowd out real source in the injected context (see akka).
+    ranked = ranked.filter((r) => !/\.(md|mdx|markdown|rst|txt|adoc)$/i.test(r.file)).slice(0, 10);
     for (const r of ranked) {
       const block = `// ${r.file}\n${r.sigs.join("\n")}\n\n`;
       if (out.length + block.length > CTX_CAP) break;
