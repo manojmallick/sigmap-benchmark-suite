@@ -1,8 +1,9 @@
 # SigMap Benchmark Suite — Issue Tracker
 
-Tracks findings from running the suite locally. Latest run: **190 repos**
-(2026-06-23) — overall token reduction **99.2%** (1.59B → 12.8M tokens), avg
-**94.9%**, scan success **189/190 = 99.5%**, avg hit@5 **54.1%** (17 task-repos).
+Tracks findings from running the suite locally. Latest run: **405 repos**
+(2026-06) → **321 supported** + 84 unsupported-language excluded — avg token
+reduction **95.6%**, overall **98.7%** (1.77B → 23.4M tokens), avg hit@5
+**54.1%**. See `FULL_REPORT.md` for scale + task + Devin agent results.
 
 Legend: severity 🔴 high · 🟡 medium · 🟢 low — status ✅ fixed · 🔧 open · 📌 backlog
 
@@ -142,16 +143,76 @@ node scripts/aggregate.mjs ~/results/raw ~/results
 Outputs: `~/results/reports/{report.md,academic_table.md}` ·
 `~/results/exports/results.{csv,json,jsonl}`
 
-### ISSUE-10 · Ranked context can hurt the agent when it misses · 🟡 · partially fixed
-Devin A/B run: SigMap helped on hits (vue-core 30.6→8.9min, okhttp 7.0→3.8min)
-but HURT on misses (rust-analyzer 2.1→3.5min, akka 12.5→14.2min). Root cause:
-the injected top-K did **not** contain the target file —
-- akka: query matched `akka-docs/*.md` prose; even after excluding docs, the
-  TF-IDF ranker still didn't surface `cluster/Cluster.scala` (ranked neighbors:
-  ClusterEvent/ClusterJmx/ClusterSingletonManager).
-- rust-analyzer: ranked `ast/traits.rs`, `ast/make.rs` — not `ast.rs`.
-Injected context was tiny (~1.3k–2.8k tokens) → a relevance failure, not size.
-- **Fixed (harness):** drop `.md/.rst/.txt` from the injected ranked context.
-- **Residual (upstream):** the ranker finds *neighbors not the target* — the
-  core TF-IDF limitation (no stemming/semantics). Feeding near-miss files can
-  mislead the agent. Real fix lives in the SigMap core ranker.
+## Devin agent experiment — issues & fixes
+
+A/B harness (`scripts/devin-experiment.mjs`): run each task through Devin twice —
+**A** = task prompt only (Devin explores), **B** = SigMap ranked context injected —
+and measure wall-clock. The first run showed two *negative* results (akka −14%,
+rust-analyzer −65%) that looked like SigMap failures. Investigation proved they
+were **harness bugs, not SigMap** — every target file was always in the index.
+Fixing them flipped both. Final: **4/5 tasks faster, avg ~61%** (akka 12.5→3.2,
+vue-core 30.6→8.9, okhttp 7.0→3.8, flask 4.5→3.9, rust-analyzer 2.1→2.4 noise).
+
+| Task | B before fixes | B after fixes |
+|---|--:|--:|
+| akka | 14.2 min (−14%) | **3.2 min (+74%)** |
+| rust-analyzer | 3.5 min (−65%) | **2.4 min (−16%, noise)** |
+
+### ISSUE-10 · Negative agent results misread as SigMap failures · 🟡 · ✅
+**Symptom:** akka/rust-analyzer arm B slower than A → "SigMap hurts the agent."
+**Real cause:** three independent harness bugs (ISSUE-11/12/13) corrupted the
+*injected context*; the SigMap index itself was correct (every target file was
+present — verified by `grep`-ing the generated `copilot-instructions.md`).
+**Lesson:** always verify coverage (is the file in the index?) separately from
+ranking (is it in the top-K?) before blaming the engine.
+
+### ISSUE-11 · Devin's 30k-char prompt limit · 🔴 · ✅
+**Symptom:** all 4 hard-task arm-B sessions failed with
+`400 "Prompt is too long. Must be less than 30000 characters."` — the full
+SigMap signature map for big repos is far larger than 30k chars.
+**Fix:** inject only the **ranked top-K files** for the task (the real
+`sigmap ask` workflow), capped at ~22k chars — small, and more realistic than
+dumping the whole map. `sigmapRanked()` in the harness.
+
+### ISSUE-12 · Doc/`.md` pollution in ranked context · 🟡 · ✅
+**Symptom:** akka's natural-language query matched `akka-docs/*.md` prose, which
+ranked **above the code** and got injected — actively *misleading* Devin
+(14.2 min). Markdown/RST have no signatures but score high on word overlap.
+**Fix:** drop `.md/.mdx/.markdown/.rst/.txt/.adoc` from the ranked results, and
+add doc dirs (`akka-docs`, etc.) to the generation `exclude`. akka B → 3.2 min.
+
+### ISSUE-13 · top-K cutoff too tight · 🟡 · ✅
+**Symptom:** rust-analyzer's `ast.rs` ranked **#11** for the task — *one slot*
+outside the old top-10 cutoff — so it was dropped and Devin got only neighbor
+files.
+**Fix:** keep **top-15** after doc-filtering (query top-30 to have headroom).
+`ast.rs` now included.
+
+### ISSUE-14 · Verbose task sentence dilutes TF-IDF ranking · 🟡 · ✅
+**Symptom:** ranking with the full prose prompt ("In the syntax crate's AST
+module, add a helper that returns the text range of an expression node…") put
+`ast.rs` at #11; a focused keyword query ("ast expression node range") put it at
+**#1**. Long sentences add noise tokens that dilute the match.
+**Fix:** add a per-task `query` field (focused keywords) to `devin-tasks.jsonl`
+and rank with `task.query || task.prompt`.
+
+### ISSUE-15 · Genuine ranker miss on some targets · 🟡 · 🔧 (upstream)
+Even after ISSUE-12/13/14, akka's `Cluster.scala` is **not in the top-50 for any
+query** — its signatures don't contain the query vocabulary (the reachability
+logic lives in sibling files), so TF-IDF can't surface it. akka B still won
+(+74%) because the *clean* neighbor context was enough, but the canonical file
+wasn't found. **Real fix is in the SigMap core ranker** (stemming/semantic
+retrieval) — same root cause as ISSUE-2's residual. Tracks the 62.7% hit@5 ceiling.
+
+### ISSUE-16 · Devin ACUs not in the API · 🟢 · 🔧 (process)
+Devin's billing unit (ACUs) and raw token counts are **not returned by the
+session API** — only wall-clock/steps/messages are. **Workaround:** read ACUs
+per session from the Devin dashboard (session IDs are logged in
+`~/results/devin/results.jsonl`). Wall-clock is the only auto-captured cost proxy.
+
+### ISSUE-17 · Results not yet statistically robust · 🟢 · 🔧 (methodology)
+Current Devin numbers are **n=1 per cell** (Devin is stochastic; rust-analyzer's
+−16% is noise on a 2-min task), and the B arms span **two harness versions**
+(akka/rust-analyzer on the fixed ranker; flask/okhttp/vue-core on the prior one).
+**Fix:** a clean **3-rep full run** on the fixed harness (30 sessions) for real
+averages + confidence intervals, plus dashboard ACUs for the cost column.
