@@ -1,7 +1,25 @@
 # SigMap Benchmark Suite — Complete & Publication Ready
 
-**Date:** 2026-04-30  
-**Status:** ✅ **TWO VERSIONS PUBLISHED - EXTENDED DATASET READY**
+**Updated:** 2026-06 · **Status:** ✅ Scale + task + agent benchmarks reproduced
+
+> 📄 **[FULL_REPORT.md](FULL_REPORT.md)** — the consolidated results across all three
+> experiments. **[issues.md](issues.md)** — every issue found & fixed (ISSUE-1…17).
+
+---
+
+## 🆕 Latest results (2026-06)
+
+Three independent experiments, reproduced locally on SigMap v7.30:
+
+| Experiment | Result |
+|---|---|
+| **Scale** — 405 repos | **95.6% avg / 98.7% overall** token reduction (321 supported + 84 unsupported-language, excluded) |
+| **Tasks** — 51 real coding tasks | **99.2% fewer tokens, 96× cheaper** ($1.73 → $0.018), 62.7% right-file retrieval |
+| **Agent** — Devin A/B | **~61% faster, 4 of 5 tasks** (akka 12.5→3.2 min, vue-core 30.6→8.9) — see caveats in the report |
+| **Re-ranker** — BM25 prototype | retrieval **hit@5 75.3% → 82.4%** (MRR +16%) over the TF-IDF baseline |
+
+Key scripts: `run_streaming.mjs` (scale), `task-benchmark-all.mjs` (tasks),
+`devin-experiment.mjs` (agent A/B), `rerank-eval.mjs` + `rerank.mjs` (re-ranker).
 
 ---
 
