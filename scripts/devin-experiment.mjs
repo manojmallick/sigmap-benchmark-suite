@@ -41,10 +41,14 @@ const POLL_MAX_MS = Number(opt("--maxwait", 1800)) * 1000;
 const TASKS_FILE = opt("--tasks", join(HERE, "devin-tasks.jsonl"));
 mkdirSync(SESS_DIR, { recursive: true });
 
-// ── SigMap context for a repo (signature map injected in arm B) ──────────────
+// ── SigMap RANKED context for a task (top-K files via `sigmap ask`) ───────────
+// Devin caps prompts at ~30k chars, so we inject only the files SigMap ranks
+// for THIS task (the real `sigmap ask` workflow), not the whole signature map.
+const CTX_CAP = 22000; // chars — leave room under Devin's 30k prompt limit
 const ctxCache = new Map();
-function sigmapContext(repoUrl) {
-  if (ctxCache.has(repoUrl)) return ctxCache.get(repoUrl);
+function sigmapRanked(repoUrl, query) {
+  const k = `${repoUrl}::${query}`;
+  if (ctxCache.has(k)) return ctxCache.get(k);
   const work = mkdtempSync(join(tmpdir(), "devin-ctx-"));
   let out = "";
   try {
@@ -55,14 +59,18 @@ function sigmapContext(repoUrl) {
       exclude: ["node_modules", ".git", "dist", "build", "target", "vendor", "test", "tests", "docs", "website", "i18n", "examples"],
     }));
     execFileSync(process.execPath, [SIGMAP], { cwd: dir, stdio: "ignore", timeout: 180000 });
-    out = readFileSync(join(dir, ".github", "copilot-instructions.md"), "utf8");
-    if (out.length > 200000) out = out.slice(0, 200000) + "\n…(truncated)";
+    const ranked = JSON.parse(execFileSync(process.execPath, [SIGMAP, "--query", query, "--top", "10", "--json"], { cwd: dir, encoding: "utf8", timeout: 120000 })).results || [];
+    for (const r of ranked) {
+      const block = `// ${r.file}\n${r.sigs.join("\n")}\n\n`;
+      if (out.length + block.length > CTX_CAP) break;
+      out += block;
+    }
   } catch (e) {
-    console.error(`  ! context gen failed for ${repoUrl}: ${e.message}`);
+    console.error(`  ! ranked-context gen failed for ${repoUrl}: ${e.message}`);
   } finally {
     rmSync(work, { recursive: true, force: true });
   }
-  ctxCache.set(repoUrl, out);
+  ctxCache.set(k, out);
   return out;
 }
 
@@ -72,8 +80,8 @@ function buildPrompt(task, arm) {
   // upstream repos, so a PR would block. Work fully autonomously.
   const body = `Task: ${task.prompt}\nImplement the change and add a test. Work autonomously without asking for confirmation. In your FINAL message, output the COMPLETE unified diff (git diff format) of every file you created or changed. Do NOT push to GitHub or open a pull request.`;
   if (arm === "A") return `${head}\n\n${body}`;
-  const ctx = sigmapContext(task.repoUrl);
-  return `${head}\n\nVerified SigMap context map (function & class signatures — the files that matter, ~97% fewer tokens than the full source):\n\n${ctx}\n\n${body}`;
+  const ctx = sigmapRanked(task.repoUrl, task.prompt);
+  return `${head}\n\nSigMap pre-ranked the most relevant files for this task (function & class signatures — start here instead of exploring the whole repo):\n\n${ctx}\n${body}`;
 }
 
 // ── Devin API ────────────────────────────────────────────────────────────────
@@ -124,24 +132,28 @@ async function runSession(task, arm, rep) {
 
 // ── Run ──────────────────────────────────────────────────────────────────────
 const tasks = readFileSync(TASKS_FILE, "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)).slice(0, MAX);
-let results = [];
 const resFile = join(OUT, "results.jsonl");
+// Merge with any prior results (so re-running one arm doesn't drop the other).
+const byKey = new Map(
+  (existsSync(resFile) ? readFileSync(resFile, "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [])
+    .map((r) => [`${r.task}_${r.arm}_${r.rep}`, r])
+);
+let results = [...byKey.values()];
 
 if (!REPORT_ONLY) {
   if (!KEY) { console.error("DEVIN_API_KEY required to run sessions."); process.exit(1); }
-  console.error(`[devin-exp] ${PILOT ? "PILOT" : "FULL"} · ${tasks.length} tasks × ${ARMS.join("/")} × ${REPS} reps = ${tasks.length * ARMS.length * REPS} sessions`);
+  console.error(`[devin-exp] ${PILOT ? "PILOT" : "FULL"} · ${tasks.length} tasks × ${ARMS.join("/")} × ${REPS} reps`);
   console.error(`[devin-exp] ⚠ this spends ACUs. Ctrl-C to abort.`);
   for (const task of tasks) for (const arm of ARMS) for (let rep = 1; rep <= REPS; rep++) {
     console.error(`  → ${task.id} arm ${arm} rep ${rep} …`);
     try {
       const r = await runSession(task, arm, rep);
-      results.push(r);
+      byKey.set(`${task.id}_${arm}_${rep}`, r);
+      results = [...byKey.values()];
       writeFileSync(resFile, results.map((x) => JSON.stringify(x)).join("\n") + "\n");
-      console.error(`    ${r.status} · ${(r.durationMs / 60000).toFixed(1)}min · steps ${r.steps} · acus ${r.acus ?? "?"} · pr ${r.pr ? "yes" : "no"}`);
+      console.error(`    ${r.status} · ${(r.durationMs / 60000).toFixed(1)}min · steps ${r.steps} · diff ${r.hasDiff ? "yes" : "no"}`);
     } catch (e) { console.error(`    ✗ ${e.message}`); }
   }
-} else {
-  results = existsSync(resFile) ? readFileSync(resFile, "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
 }
 
 // ── Report (paired A vs B) ───────────────────────────────────────────────────
