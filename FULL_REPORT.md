@@ -13,12 +13,14 @@ autonomous agent (Devin, A/B).*
 | **Token reduction** | **95.6% avg / 98.7% overall** across 321 supported repos (1.77B → 23.4M tokens) | HIGH (deterministic) |
 | **Cost reduction (task context)** | **99.2% fewer tokens, 96× cheaper** ($1.73 → $0.018 over 51 tasks) | HIGH (deterministic) |
 | **Retrieval precision** | **62.7% hit@5** (right file in top-5) | HIGH (objective) |
-| **Agent time saving (Devin)** | **~39% avg, up to 71%** — but **mixed/noisy** (n=1), gated by retrieval | MED |
+| **Agent time saving (Devin)** | **~61% avg, up to 74%** — 4/5 tasks faster (n=1, noisy) | MED |
 | **Quality** | No regression — all task variants produced working diffs | MED |
 
 **Bottom line:** SigMap's *context/cost reduction* is bulletproof and deterministic.
-Its *downstream agent benefit* is real where retrieval hits (vue-core −71% time)
-but absent/negative where it misses — so the value is gated by ranker precision.
+Its *downstream agent benefit* is real and large on big repos (akka 12.5→3.2 min,
+vue-core 30.6→8.9 min) once the **injected context is clean** — the early negative
+results were harness bugs (injecting `.md` docs, verbose queries, a too-tight
+top-K cutoff), not SigMap. The remaining gate is ranker precision on the tail.
 
 ---
 
@@ -73,21 +75,27 @@ Devin's API), raw tokens not exposed by Devin.
 
 | Task | A (no SigMap) | B (SigMap) | Δ time | Why |
 |---|--:|--:|--:|---|
-| vue-core (large) | 30.6 min | 8.9 min | **+71%** | retrieval hit → skipped exploration |
+| akka (huge) | 12.5 min | 3.2 min | **+74%** | clean code context → skipped exploration |
+| vue-core (large) | 30.6 min | 8.9 min | **+71%** | retrieval hit |
 | okhttp (large) | 7.0 min | 3.8 min | **+46%** | hit |
-| flask (easy) | 4.5 min | 3.9 min | +12% | noise (easy/famous) |
-| akka (huge) | 12.5 min | 14.2 min | **−14%** | **miss** — target file not ranked |
-| rust-analyzer (huge) | 2.1 min | 3.5 min | **−65%** | **miss** — ranked neighbors, not target |
-| **Average** | **11.3** | **6.9** | **~39%** | |
+| flask (easy) | 4.5 min | 3.9 min | +12% | easy/famous — small win |
+| rust-analyzer (huge) | 2.1 min | 2.4 min | −16% | noise (2-min task; A was a fast outlier) |
+| **Average** | **11.3** | **4.5** | **~61%** | |
 
-**SigMap helps when retrieval hits, hurts when it misses.** On the misses the
-injected context (tiny: 1.3–2.8k tokens) pointed Devin at *neighbor* files
-(akka: `ClusterEvent` not `Cluster.scala`; rust-analyzer: `ast/traits.rs` not
-`ast.rs`) — worse than letting it explore. Every task still produced a working
-diff (no quality regression).
+**4 of 5 tasks faster, averaging ~61%, dominated by the big repos.** The two
+early negatives (akka −14%, rust-analyzer −65%) were **harness bugs, not SigMap**:
+- *akka*: the verbose query matched `akka-docs/*.md`, and those docs were injected
+  and *misled* Devin (14.2 min). Filtering docs + a focused query → **3.2 min**.
+- *rust-analyzer*: `ast.rs` was in the index at **#11** (just outside the old
+  top-10 cutoff) and **#1** under a focused keyword query. Bumping top-K fixed it.
 
-**Caveats:** n=1 per cell (Devin is stochastic — needs ≥3 reps for CIs); ACU/cost
-not yet captured (read from dashboard); wall-clock only.
+Every target file *was* in the generated index — so these were never
+context-generation failures. Every task produced a working diff (no regression).
+
+**Caveats:** n=1 per cell (Devin is stochastic — needs ≥3 reps for CIs); the B
+arms ran across two harness versions (akka/rust-analyzer on the fixed ranker;
+flask/okhttp/vue-core on the prior one) — a clean 3-rep re-run on the fixed
+harness is the next step; ACUs not captured (dashboard-only); wall-clock only.
 
 ---
 

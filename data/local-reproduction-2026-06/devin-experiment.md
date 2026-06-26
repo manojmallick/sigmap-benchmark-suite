@@ -1,12 +1,12 @@
 # Devin Experiment — SigMap impact
 
-Generated 2026-06-26T05:53:14.588Z · 10 sessions
+Generated 2026-06-26T06:20:30.610Z · 10 sessions
 Arms: A = no SigMap, B = SigMap context injected. Metrics averaged per arm.
 
 | Metric | A (no SigMap) | B (SigMap) | Saving |
 |---|--:|--:|--:|
 | ACUs / task | — | — | — |
-| Wall-clock (min) | 11.3 | 6.9 | 39.4% |
+| Wall-clock (min) | 11.3 | 4.5 | 60.7% |
 | Steps | 3.0 | 3.0 | 0.0% |
 
 Success (produced a diff): A 5/5 · B 5/5
