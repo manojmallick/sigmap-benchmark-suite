@@ -59,10 +59,11 @@ function sigmapRanked(repoUrl, query) {
       exclude: ["node_modules", ".git", "dist", "build", "target", "vendor", "test", "tests", "docs", "website", "i18n", "examples"],
     }));
     execFileSync(process.execPath, [SIGMAP], { cwd: dir, stdio: "ignore", timeout: 180000 });
-    let ranked = JSON.parse(execFileSync(process.execPath, [SIGMAP, "--query", query, "--top", "15", "--json"], { cwd: dir, encoding: "utf8", timeout: 120000 })).results || [];
+    let ranked = JSON.parse(execFileSync(process.execPath, [SIGMAP, "--query", query, "--top", "30", "--json"], { cwd: dir, encoding: "utf8", timeout: 120000 })).results || [];
     // Drop prose/doc files (.md/.rst/…): natural-language tasks match docs over
     // code, which then crowd out real source in the injected context (see akka).
-    ranked = ranked.filter((r) => !/\.(md|mdx|markdown|rst|txt|adoc)$/i.test(r.file)).slice(0, 10);
+    // Keep a generous top-15 (the target sometimes ranks #11-15, e.g. rust-analyzer ast.rs).
+    ranked = ranked.filter((r) => !/\.(md|mdx|markdown|rst|txt|adoc)$/i.test(r.file)).slice(0, 15);
     for (const r of ranked) {
       const block = `// ${r.file}\n${r.sigs.join("\n")}\n\n`;
       if (out.length + block.length > CTX_CAP) break;
@@ -83,7 +84,9 @@ function buildPrompt(task, arm) {
   // upstream repos, so a PR would block. Work fully autonomously.
   const body = `Task: ${task.prompt}\nImplement the change and add a test. Work autonomously without asking for confirmation. In your FINAL message, output the COMPLETE unified diff (git diff format) of every file you created or changed. Do NOT push to GitHub or open a pull request.`;
   if (arm === "A") return `${head}\n\n${body}`;
-  const ctx = sigmapRanked(task.repoUrl, task.prompt);
+  // Rank with a focused keyword query, not the verbose task sentence — the full
+  // prose dilutes TF-IDF (e.g. rust-analyzer ast.rs: #11 by prose vs #1 by keywords).
+  const ctx = sigmapRanked(task.repoUrl, task.query || task.prompt);
   return `${head}\n\nSigMap pre-ranked the most relevant files for this task (function & class signatures — start here instead of exploring the whole repo):\n\n${ctx}\n${body}`;
 }
 
