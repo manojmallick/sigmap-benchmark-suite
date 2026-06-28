@@ -210,9 +210,22 @@ session API** — only wall-clock/steps/messages are. **Workaround:** read ACUs
 per session from the Devin dashboard (session IDs are logged in
 `~/results/devin/results.jsonl`). Wall-clock is the only auto-captured cost proxy.
 
-### ISSUE-17 · Results not yet statistically robust · 🟢 · 🔧 (methodology)
-Current Devin numbers are **n=1 per cell** (Devin is stochastic; rust-analyzer's
-−16% is noise on a 2-min task), and the B arms span **two harness versions**
-(akka/rust-analyzer on the fixed ranker; flask/okhttp/vue-core on the prior one).
-**Fix:** a clean **3-rep full run** on the fixed harness (30 sessions) for real
-averages + confidence intervals, plus dashboard ACUs for the cost column.
+### ISSUE-17 · Single-run agent speedup did not replicate · 🔴 · ✅ (corrected)
+The single-run "61% faster" was **n=1 noise**. A clean **3-rep A/B (30 sessions)**
+on the fixed re-ranker harness came out **within noise**: completed sessions
+averaged **8.4 min (A) vs 8.0 min (B)** (+5%), with high per-session variance.
+- **Action taken:** removed the agent-speed claim from the public proof page,
+  demo, OG cards, README, and FULL_REPORT; replaced with the honest "not
+  established" framing. Token/cost (deterministic) and retrieval (re-ranker)
+  claims stand.
+- **Lesson:** never publish an n=1 agent metric. Agent wall-clock needs ≥3 reps
+  before any claim.
+
+### ISSUE-18 · 30-min poll cap censors big-repo sessions · 🟡 · 🔧 (methodology)
+The harness polls each Devin session up to `POLL_MAX_MS` (30 min); a session that
+exceeds it records the cap value with `hasDiff=false` — **right-censored** data.
+In the 3-rep run this hit **B 4/15 vs A 1/15** (akka B 0/3 completed), biasing the
+raw means and making SigMap look slower than completed-only data shows.
+- **Fix:** raise the cap to ≥90 min so big-repo sessions complete, and/or report
+  **completed-only** means + censoring counts (never average in capped values).
+- Until then the agent-speed question stays open (see ISSUE-17).
