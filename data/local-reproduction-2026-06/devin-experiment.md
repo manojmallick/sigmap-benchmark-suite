@@ -1,16 +1,16 @@
 # Devin Experiment — SigMap impact
 
-Generated 2026-06-26T06:20:30.610Z · 10 sessions
+Generated 2026-06-27T03:15:59.655Z · 30 sessions
 Arms: A = no SigMap, B = SigMap context injected. Metrics averaged per arm.
 
 | Metric | A (no SigMap) | B (SigMap) | Saving |
 |---|--:|--:|--:|
 | ACUs / task | — | — | — |
-| Wall-clock (min) | 11.3 | 4.5 | 60.7% |
-| Steps | 3.0 | 3.0 | 0.0% |
+| Wall-clock (min) | 9.8 | 17.8 | -81.3% |
+| Steps | 2.9 | 2.6 | 11.4% |
 
-Success (produced a diff): A 5/5 · B 5/5
-Edited an expected file: A 4 · B 4
+Success (produced a diff): A 14/15 · B 11/15
+Edited an expected file: A 11 · B 6
 
 ⚠ ACUs (Devin's billing unit) are NOT returned by the session API — read them
 from the Devin dashboard per session and fill them in. Wall-clock is the only

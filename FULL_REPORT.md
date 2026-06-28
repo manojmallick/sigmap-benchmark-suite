@@ -13,14 +13,15 @@ autonomous agent (Devin, A/B).*
 | **Token reduction** | **95.6% avg / 98.7% overall** across 321 supported repos (1.77B → 23.4M tokens) | HIGH (deterministic) |
 | **Cost reduction (task context)** | **99.2% fewer tokens, 96× cheaper** ($1.73 → $0.018 over 51 tasks) | HIGH (deterministic) |
 | **Retrieval precision** | **62.7% hit@5** (right file in top-5) | HIGH (objective) |
-| **Agent time saving (Devin)** | **~61% avg, up to 74%** — 4/5 tasks faster (n=1, noisy) | MED |
+| **Agent time saving (Devin)** | **Not established** — 3-rep A/B within noise (8.4 vs 8.0 min completed); early single-run "61%" did not replicate | LOW |
 | **Quality** | No regression — all task variants produced working diffs | MED |
 
-**Bottom line:** SigMap's *context/cost reduction* is bulletproof and deterministic.
-Its *downstream agent benefit* is real and large on big repos (akka 12.5→3.2 min,
-vue-core 30.6→8.9 min) once the **injected context is clean** — the early negative
-results were harness bugs (injecting `.md` docs, verbose queries, a too-tight
-top-K cutoff), not SigMap. The remaining gate is ranker precision on the tail.
+**Bottom line:** SigMap's *context/cost reduction* is bulletproof and deterministic
+(~99% fewer tokens, 96× cheaper), and a BM25 re-ranker lifts retrieval hit@5 to
+82.4%. A *downstream agent wall-clock speedup*, however, is **not established** — a
+3-rep Devin A/B came out within noise (an early single run looked like a 61% win
+but did not replicate; see §3). We claim what the data supports: tokens, cost, and
+retrieval — not agent speed.
 
 ---
 
@@ -67,35 +68,33 @@ is constant; *which* files get surfaced is the limitation.
 
 ---
 
-## 3. Devin agent experiment — A/B (5 tasks, paired)
+## 3. Devin agent experiment — A/B (honest: no robust speedup)
 
 Same task through Devin twice: **A** = task only (Devin explores), **B** = SigMap
 ranked context injected. Wall-clock measured; **ACUs are dashboard-only** (not in
-Devin's API), raw tokens not exposed by Devin.
+Devin's API).
 
-| Task | A (no SigMap) | B (SigMap) | Δ time | Why |
-|---|--:|--:|--:|---|
-| akka (huge) | 12.5 min | 3.2 min | **+74%** | clean code context → skipped exploration |
-| vue-core (large) | 30.6 min | 8.9 min | **+71%** | retrieval hit |
-| okhttp (large) | 7.0 min | 3.8 min | **+46%** | hit |
-| flask (easy) | 4.5 min | 3.9 min | +12% | easy/famous — small win |
-| rust-analyzer (huge) | 2.1 min | 2.4 min | −16% | noise (2-min task; A was a fast outlier) |
-| **Average** | **11.3** | **4.5** | **~61%** | |
+**An early single run looked like a big win (~61% faster). It did not replicate.**
+A rigorous **3-rep A/B (30 sessions)** on the fixed re-ranker harness:
 
-**4 of 5 tasks faster, averaging ~61%, dominated by the big repos.** The two
-early negatives (akka −14%, rust-analyzer −65%) were **harness bugs, not SigMap**:
-- *akka*: the verbose query matched `akka-docs/*.md`, and those docs were injected
-  and *misled* Devin (14.2 min). Filtering docs + a focused query → **3.2 min**.
-- *rust-analyzer*: `ast.rs` was in the index at **#11** (just outside the old
-  top-10 cutoff) and **#1** under a focused keyword query. Bumping top-K fixed it.
+| Metric | A (no SigMap) | B (SigMap) |
+|---|--:|--:|
+| Mean wall-clock, **completed** sessions | **8.4 min** (n14) | **8.0 min** (n11) |
+| Diff success | 14/15 | 11/15 |
+| Sessions exceeding the 30-min poll cap (censored) | 1/15 | 4/15 |
 
-Every target file *was* in the generated index — so these were never
-context-generation failures. Every task produced a working diff (no regression).
+**Verdict: no reliable difference (+5% on completed runs, within noise).** Raw
+means *look* like SigMap is slower, but that is a **censoring artifact** — more
+B sessions hit the 30-min measurement cap (and a capped session records the cap,
+not its true time). Per-session variance is large (akka A ranged 15→30+ min), so
+the single-run numbers (akka 3.2 min, vue-core 8.9 min) were **n=1 noise**.
 
-**Caveats:** n=1 per cell (Devin is stochastic — needs ≥3 reps for CIs); the B
-arms ran across two harness versions (akka/rust-analyzer on the fixed ranker;
-flask/okhttp/vue-core on the prior one) — a clean 3-rep re-run on the fixed
-harness is the next step; ACUs not captured (dashboard-only); wall-clock only.
+**What this means:** SigMap's value is proven in **tokens and cost**
+(deterministic, above) and in **retrieval** (the re-ranker). A downstream agent
+wall-clock speedup is **not established** by this data. To resolve it cleanly,
+raise the poll cap (≥90 min so big-repo sessions complete) and re-run; until
+then, we make no agent-speed claim. Every completed run still produced a working
+diff (no quality regression).
 
 ---
 
