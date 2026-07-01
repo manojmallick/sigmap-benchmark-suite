@@ -3,7 +3,10 @@
 **Updated:** 2026-06 · **Status:** ✅ Scale + task + agent benchmarks reproduced
 
 > 📄 **[FULL_REPORT.md](FULL_REPORT.md)** — the consolidated results across all three
-> experiments. **[issues.md](issues.md)** — every issue found & fixed (ISSUE-1…17).
+> experiments. **[issues.md](issues.md)** — every issue found & fixed (ISSUE-1…18).
+> 📊 **[dashboard.html](benchmarks/reports/dashboard.html)** — self-contained visual
+> dashboard ([rendered view](https://htmlpreview.github.io/?https://github.com/manojmallick/sigmap-benchmark-suite/blob/main/benchmarks/reports/dashboard.html)) ·
+> regenerate with `node scripts/gen-dashboard.mjs`.
 
 ---
 
