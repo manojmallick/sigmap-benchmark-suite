@@ -1,0 +1,5 @@
+{"id":"zustand-x1","query":"create a store with state accessible outside react","expected_files":["src/vanilla.ts"]}
+{"id":"zustand-x2","query":"react hook to subscribe a component to store state","expected_files":["src/react.ts"]}
+{"id":"zustand-x3","query":"persist store state to storage and rehydrate it","expected_files":["src/middleware/persist.ts"]}
+{"id":"zustand-x4","query":"connect the store to redux devtools for debugging","expected_files":["src/middleware/devtools.ts"]}
+{"id":"zustand-x5","query":"shallow compare selected state to skip re-renders","expected_files":["src/vanilla/shallow.ts"]}

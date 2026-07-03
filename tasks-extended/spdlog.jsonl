@@ -1,0 +1,5 @@
+{"id":"spdlog-x1","query":"the logger that dispatches messages to sinks at a level","expected_files":["include/spdlog/logger.h"]}
+{"id":"spdlog-x2","query":"format log messages using a pattern string","expected_files":["include/spdlog/pattern_formatter.h"]}
+{"id":"spdlog-x3","query":"write logs to a new file each day rotating at midnight","expected_files":["include/spdlog/sinks/daily_file_sink.h"]}
+{"id":"spdlog-x4","query":"write log output to a basic file sink","expected_files":["include/spdlog/sinks/basic_file_sink.h"]}
+{"id":"spdlog-x5","query":"colorize console log output with ansi color codes","expected_files":["include/spdlog/sinks/ansicolor_sink.h"]}

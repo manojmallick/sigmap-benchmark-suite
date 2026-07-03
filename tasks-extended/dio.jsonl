@@ -1,0 +1,5 @@
+{"id":"dio-x1","query":"cancel an in-flight request with a token","expected_files":["dio/lib/src/cancel_token.dart"]}
+{"id":"dio-x2","query":"intercept and transform requests responses and errors","expected_files":["dio/lib/src/interceptor.dart"]}
+{"id":"dio-x3","query":"build multipart form data for file uploads","expected_files":["dio/lib/src/form_data.dart","dio/lib/src/multipart_file.dart"]}
+{"id":"dio-x4","query":"request options like base url headers and timeouts","expected_files":["dio/lib/src/options.dart"]}
+{"id":"dio-x5","query":"the response object carrying data status and headers","expected_files":["dio/lib/src/response.dart"]}

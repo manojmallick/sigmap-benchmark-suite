@@ -1,0 +1,5 @@
+{"id":"shiny-x1","query":"toggle a boolean checkbox input control","expected_files":["srcts/src/bindings/input/checkbox.ts"]}
+{"id":"shiny-x2","query":"pick a start and end calendar date range","expected_files":["srcts/src/bindings/input/daterange.ts"]}
+{"id":"shiny-x3","query":"upload a file from the browser to the server","expected_files":["srcts/src/bindings/input/fileinput.ts"]}
+{"id":"shiny-x4","query":"render an interactive data table output","expected_files":["srcts/src/bindings/output/datatable.ts"]}
+{"id":"shiny-x5","query":"drag a slider to choose a numeric value","expected_files":["srcts/src/bindings/input/slider.ts"]}

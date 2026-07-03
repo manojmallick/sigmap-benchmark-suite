@@ -1,0 +1,5 @@
+{"id":"ggplot2-x1","query":"draw the legend key glyph for a scale","expected_files":["R/guide-legend.R","R/legend-draw.R"]}
+{"id":"ggplot2-x2","query":"assemble panels and build the plot for rendering","expected_files":["R/plot-build.R"]}
+{"id":"ggplot2-x3","query":"prevent bars from overlapping by placing them side by side","expected_files":["R/position-dodge.R"]}
+{"id":"ggplot2-x4","query":"map continuous data values onto a colour gradient","expected_files":["R/scale-colour.R","R/scale-continuous.R"]}
+{"id":"ggplot2-x5","query":"a single plotting layer combining geom stat and position","expected_files":["R/layer.R"]}

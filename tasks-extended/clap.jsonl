@@ -1,0 +1,5 @@
+{"id":"clap-x1","query":"define a command with its name version and subcommands","expected_files":["clap_builder/src/builder/command.rs"]}
+{"id":"clap-x2","query":"define an argument with its flags and value settings","expected_files":["clap_builder/src/builder/arg.rs"]}
+{"id":"clap-x3","query":"parse and convert argument values into typed results","expected_files":["clap_builder/src/builder/value_parser.rs"]}
+{"id":"clap-x4","query":"group arguments as mutually exclusive or required together","expected_files":["clap_builder/src/builder/arg_group.rs"]}
+{"id":"clap-x5","query":"render the help template and usage string","expected_files":["clap_builder/src/output/help_template.rs","clap_builder/src/output/usage.rs"]}

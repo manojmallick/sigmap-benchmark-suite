@@ -1,0 +1,5 @@
+{"id":"cobra-x1","query":"define a CLI command with its run handler and subcommands","expected_files":["command.go"]}
+{"id":"cobra-x2","query":"validate the number and shape of positional arguments","expected_files":["args.go"]}
+{"id":"cobra-x3","query":"generate a bash shell autocompletion script","expected_files":["bash_completions.go","bash_completionsV2.go"]}
+{"id":"cobra-x4","query":"declare flags that must be used together or are mutually exclusive","expected_files":["flag_groups.go"]}
+{"id":"cobra-x5","query":"register dynamic shell completion for argument values","expected_files":["completions.go"]}

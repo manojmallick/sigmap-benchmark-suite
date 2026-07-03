@@ -1,0 +1,5 @@
+{"id":"alamofire-x1","query":"errors that can occur across the request lifecycle","expected_files":["Source/Core/AFError.swift"]}
+{"id":"alamofire-x2","query":"represent and normalize HTTP headers","expected_files":["Source/Core/HTTPHeaders.swift"]}
+{"id":"alamofire-x3","query":"encode parameters into the url query or request body","expected_files":["Source/Core/ParameterEncoding.swift","Source/Core/ParameterEncoder.swift"]}
+{"id":"alamofire-x4","query":"upload files or data as a request body","expected_files":["Source/Core/UploadRequest.swift"]}
+{"id":"alamofire-x5","query":"automatically refresh and apply authentication credentials","expected_files":["Source/Features/AuthenticationInterceptor.swift"]}

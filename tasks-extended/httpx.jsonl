@@ -1,0 +1,5 @@
+{"id":"httpx-x1","query":"send HTTP requests with a reusable client and connection pooling","expected_files":["httpx/_client.py"]}
+{"id":"httpx-x2","query":"authentication schemes like basic and digest auth","expected_files":["httpx/_auth.py"]}
+{"id":"httpx-x3","query":"represent request and response models with headers and body","expected_files":["httpx/_models.py"]}
+{"id":"httpx-x4","query":"decode gzip brotli and chunked response content","expected_files":["httpx/_decoders.py"]}
+{"id":"httpx-x5","query":"build multipart form data for file uploads","expected_files":["httpx/_multipart.py"]}
