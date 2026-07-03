@@ -1,0 +1,5 @@
+{"id":"guzzle-x1","query":"the HTTP client that sends synchronous and async requests","expected_files":["src/ClientInterface.php","src/ClientTrait.php"]}
+{"id":"guzzle-x2","query":"stack of handlers and middleware wrapping each request","expected_files":["src/HandlerStack.php"]}
+{"id":"guzzle-x3","query":"store and match cookies across requests","expected_files":["src/Cookie/CookieJar.php"]}
+{"id":"guzzle-x4","query":"send a request using a curl handler","expected_files":["src/Handler/CurlHandler.php"]}
+{"id":"guzzle-x5","query":"middleware that retries failed requests and follows redirects","expected_files":["src/RetryMiddleware.php","src/RedirectMiddleware.php"]}

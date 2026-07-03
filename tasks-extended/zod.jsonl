@@ -1,0 +1,5 @@
+{"id":"zod-x1","query":"parse input against a schema and return the validated result","expected_files":["packages/zod/src/v4/classic/parse.ts"]}
+{"id":"zod-x2","query":"coerce a value to the target type before validating","expected_files":["packages/zod/src/v4/classic/coerce.ts"]}
+{"id":"zod-x3","query":"convert a schema into a JSON Schema document","expected_files":["packages/zod/src/v4/core/to-json-schema.ts"]}
+{"id":"zod-x4","query":"define the core schema classes and their validation checks","expected_files":["packages/zod/src/v4/core/schemas.ts"]}
+{"id":"zod-x5","query":"format and customize validation error messages","expected_files":["packages/zod/src/v4/core/errors.ts","packages/zod/src/v4/classic/errors.ts"]}

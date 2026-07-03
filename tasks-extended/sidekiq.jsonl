@@ -1,0 +1,5 @@
+{"id":"sidekiq-x1","query":"fetch a job off the queue and execute it","expected_files":["lib/sidekiq/processor.rb"]}
+{"id":"sidekiq-x2","query":"enqueue a job atomically within a database transaction","expected_files":["lib/sidekiq/transaction_aware_client.rb"]}
+{"id":"sidekiq-x3","query":"run a chain of middleware around job execution","expected_files":["lib/sidekiq/middleware/chain.rb"]}
+{"id":"sidekiq-x4","query":"poll for scheduled and retryable jobs over time","expected_files":["lib/sidekiq/scheduled.rb"]}
+{"id":"sidekiq-x5","query":"manage the redis connection pool","expected_files":["lib/sidekiq/redis_connection.rb"]}

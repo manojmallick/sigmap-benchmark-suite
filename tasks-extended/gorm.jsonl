@@ -1,0 +1,5 @@
+{"id":"gorm-x1","query":"open a database connection and configure the ORM","expected_files":["gorm.go"]}
+{"id":"gorm-x2","query":"build a SQL statement from clauses and conditions","expected_files":["statement.go"]}
+{"id":"gorm-x3","query":"run schema migrations and alter tables","expected_files":["migrator.go","migrator/migrator.go"]}
+{"id":"gorm-x4","query":"scan query result rows into structs","expected_files":["scan.go"]}
+{"id":"gorm-x5","query":"soft delete records with a deleted at timestamp","expected_files":["soft_delete.go"]}

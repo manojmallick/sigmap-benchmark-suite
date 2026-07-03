@@ -1,0 +1,5 @@
+{"id":"dplyr-x1","query":"keep only rows that satisfy a logical condition","expected_files":["R/filter.R"]}
+{"id":"dplyr-x2","query":"split a data frame into groups by one or more variables","expected_files":["R/group-by.R"]}
+{"id":"dplyr-x3","query":"combine two tables by matching key columns","expected_files":["R/join.R","R/join-by.R"]}
+{"id":"dplyr-x4","query":"create or modify columns using expressions","expected_files":["R/mutate.R"]}
+{"id":"dplyr-x5","query":"collapse many rows down to summary statistics","expected_files":["R/summarise.R"]}

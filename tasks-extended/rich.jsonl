@@ -1,0 +1,5 @@
+{"id":"rich-x1","query":"render a styled panel box around content","expected_files":["rich/panel.py"]}
+{"id":"rich-x2","query":"display and update progress bars in the terminal","expected_files":["rich/progress.py"]}
+{"id":"rich-x3","query":"render markdown as formatted terminal output","expected_files":["rich/markdown.py"]}
+{"id":"rich-x4","query":"prompt the user for typed input on the console","expected_files":["rich/prompt.py"]}
+{"id":"rich-x5","query":"arrange the terminal into resizable layout regions","expected_files":["rich/layout.py"]}

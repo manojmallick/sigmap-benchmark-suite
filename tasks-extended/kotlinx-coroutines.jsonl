@@ -1,0 +1,5 @@
+{"id":"kotlinx-x1","query":"the job that tracks lifecycle and cancellation of a coroutine","expected_files":["kotlinx-coroutines-core/common/src/JobSupport.kt"]}
+{"id":"kotlinx-x2","query":"cancel a coroutine after a timeout duration","expected_files":["kotlinx-coroutines-core/common/src/Timeout.kt"]}
+{"id":"kotlinx-x3","query":"channel for sending and receiving values between coroutines","expected_files":["kotlinx-coroutines-core/common/src/channels/Channel.kt"]}
+{"id":"kotlinx-x4","query":"a cold asynchronous stream of values","expected_files":["kotlinx-coroutines-core/common/src/flow/Flow.kt"]}
+{"id":"kotlinx-x5","query":"state holder flow emitting current and updated values","expected_files":["kotlinx-coroutines-core/common/src/flow/StateFlow.kt"]}

@@ -1,0 +1,5 @@
+{"id":"retrofit-x1","query":"build the client and create API service implementations from an interface","expected_files":["retrofit/src/main/java/retrofit2/Retrofit.java"]}
+{"id":"retrofit-x2","query":"turn an annotated interface method into an HTTP request definition","expected_files":["retrofit/src/main/java/retrofit2/RequestFactory.java"]}
+{"id":"retrofit-x3","query":"construct the request url headers and body from method parameters","expected_files":["retrofit/src/main/java/retrofit2/RequestBuilder.java"]}
+{"id":"retrofit-x4","query":"adapt a Call into futures or other return types","expected_files":["retrofit/src/main/java/retrofit2/DefaultCallAdapterFactory.java"]}
+{"id":"retrofit-x5","query":"convert response and request bodies with built in converters","expected_files":["retrofit/src/main/java/retrofit2/BuiltInConverters.java"]}

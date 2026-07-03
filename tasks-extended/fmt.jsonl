@@ -1,0 +1,5 @@
+{"id":"fmt-x1","query":"core formatting engine and format string parsing","expected_files":["include/fmt/format.h"]}
+{"id":"fmt-x2","query":"format dates times and durations","expected_files":["include/fmt/chrono.h"]}
+{"id":"fmt-x3","query":"add terminal colors and text styles to output","expected_files":["include/fmt/color.h"]}
+{"id":"fmt-x4","query":"format ranges tuples and containers","expected_files":["include/fmt/ranges.h"]}
+{"id":"fmt-x5","query":"printf compatible formatting","expected_files":["include/fmt/printf.h"]}

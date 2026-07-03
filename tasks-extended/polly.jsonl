@@ -1,0 +1,5 @@
+{"id":"polly-x1","query":"circuit breaker that opens after consecutive failures","expected_files":["src/Polly/CircuitBreaker/CircuitStateController.cs"]}
+{"id":"polly-x2","query":"fall back to an alternative value when an action fails","expected_files":["src/Polly/Fallback/FallbackPolicy.cs","src/Polly/Fallback/AsyncFallbackPolicy.cs"]}
+{"id":"polly-x3","query":"the async policy interface for executing wrapped actions","expected_files":["src/Polly/IAsyncPolicy.cs"]}
+{"id":"polly-x4","query":"decide which exceptions a resilience policy should handle","expected_files":["src/Polly/ExceptionPredicates.cs"]}
+{"id":"polly-x5","query":"track rolling health metrics of successes and failures","expected_files":["src/Polly/CircuitBreaker/RollingHealthMetrics.cs"]}

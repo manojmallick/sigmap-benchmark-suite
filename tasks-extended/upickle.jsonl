@@ -1,0 +1,5 @@
+{"id":"upickle-x1","query":"the JSON AST value types object array string number","expected_files":["ujson/src/ujson/Value.scala"]}
+{"id":"upickle-x2","query":"render a JSON value out to a string or stream","expected_files":["ujson/src/ujson/Renderer.scala"]}
+{"id":"upickle-x3","query":"parse JSON text from a string into visitor events","expected_files":["ujson/src/ujson/StringParser.scala"]}
+{"id":"upickle-x4","query":"visitor interface for building JSON structures","expected_files":["ujson/src/ujson/JsVisitor.scala"]}
+{"id":"upickle-x5","query":"transform between different JSON representations","expected_files":["ujson/src/ujson/Transformer.scala","ujson/src/ujson/AstTransformer.scala"]}

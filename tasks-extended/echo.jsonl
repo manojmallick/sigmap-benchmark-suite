@@ -1,0 +1,5 @@
+{"id":"echo-x1","query":"register routes and start the web server","expected_files":["echo.go"]}
+{"id":"echo-x2","query":"match a request path using the trie router","expected_files":["router.go"]}
+{"id":"echo-x3","query":"bind JSON or form request data into a struct","expected_files":["bind.go","binder.go"]}
+{"id":"echo-x4","query":"render an HTML template to the response","expected_files":["renderer.go"]}
+{"id":"echo-x5","query":"return an HTTP error with a status code and message","expected_files":["httperror.go"]}

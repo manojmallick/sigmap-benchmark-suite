@@ -1,0 +1,5 @@
+{"id":"click-x1","query":"decorators to define commands options and arguments","expected_files":["src/click/decorators.py"]}
+{"id":"click-x2","query":"parameter types and value conversion","expected_files":["src/click/types.py"]}
+{"id":"click-x3","query":"terminal prompts progress bars and styled output","expected_files":["src/click/termui.py"]}
+{"id":"click-x4","query":"test a command line app by invoking it in isolation","expected_files":["src/click/testing.py"]}
+{"id":"click-x5","query":"parse command line options and arguments","expected_files":["src/click/parser.py"]}

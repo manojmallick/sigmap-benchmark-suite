@@ -1,0 +1,5 @@
+{"id":"gson-x1","query":"reflectively read and write object fields to and from json","expected_files":["gson/src/main/java/com/google/gson/internal/bind/ReflectiveTypeAdapterFactory.java"]}
+{"id":"gson-x2","query":"parse a json string into a tree of elements","expected_files":["gson/src/main/java/com/google/gson/JsonParser.java"]}
+{"id":"gson-x3","query":"streaming pull parser reading json tokens","expected_files":["gson/src/main/java/com/google/gson/stream/JsonReader.java"]}
+{"id":"gson-x4","query":"streaming writer emitting json tokens","expected_files":["gson/src/main/java/com/google/gson/stream/JsonWriter.java"]}
+{"id":"gson-x5","query":"factory that creates type adapters for a given type","expected_files":["gson/src/main/java/com/google/gson/TypeAdapterFactory.java"]}

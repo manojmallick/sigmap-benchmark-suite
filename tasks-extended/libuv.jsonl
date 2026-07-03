@@ -1,0 +1,5 @@
+{"id":"libuv-x1","query":"tcp stream sockets connect listen and accept","expected_files":["src/unix/tcp.c"]}
+{"id":"libuv-x2","query":"udp datagram send and receive","expected_files":["src/unix/udp.c"]}
+{"id":"libuv-x3","query":"threads mutexes and condition variables","expected_files":["src/unix/thread.c"]}
+{"id":"libuv-x4","query":"poll file descriptors for readiness events","expected_files":["src/unix/poll.c"]}
+{"id":"libuv-x5","query":"pseudo terminal tty handling","expected_files":["src/unix/tty.c"]}
