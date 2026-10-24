@@ -63,6 +63,7 @@ zenodo_submission*/        Metadata, methodology and reproducibility notes for t
 FULL_REPORT.md             Consolidated results of all experiments
 issues.md                  Issues found and fixed while reproducing (ISSUE-1 to ISSUE-18)
 docs/PROJECT_STATUS.md     Earlier internal status notes, kept for history
+docs/promotion/            Publication and announcement drafts (paper submission, release, social posts)
 ```
 
 ## Further reading
